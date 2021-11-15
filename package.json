@@ -1,0 +1,21 @@
+{
+  "name": "near-rock-paper-scissor",
+  "version": "0.0.1",
+  "description": "This repository includes a complete Smart Contract for a rock-paper-scissor game built on the NEAR blockchain. This is the first variant of the smart contract with a fault.",
+  "scripts": {
+    "dev": "watch -d -n 1 'clear && yarn test:unit'",
+    "asp": "asp --verbose --nologo",
+    "test:unit": "yarn asp -f unit.spec",
+    "build": "asb --target debug",
+    "build:release": "asb",
+    "test": "yarn build:release && yarn test:unit",
+    "clean": "rm -rf ./build && rm -rf ./neardev && rm -rf ./target",
+    "deploy": "./scripts/1.deploy.sh"
+  },
+  "keywords": ["NEAR", "NEAR protocol", "NEAR blockchain", "smart contract", "game development", "AssemblyScript"],
+  "author": "support@graate.org",
+  "license": "ISC",
+  "dependencies": {
+    "near-sdk-as": "^3.2.3"
+  }
+}
