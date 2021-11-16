@@ -1,6 +1,6 @@
 import {u128, Context } from "near-sdk-as";
-import { GFEE, RFEE, RoomId } from "../utils";
-import { Game, Room, rooms, Visibility } from "./model";
+import { AccountId, GameId, GFEE, PFEE, RFEE, RoomId } from "../utils";
+import { Choice, Game, Room, rooms, Visibility } from "./model";
 
 export function createRoom(_isVisible: Visibility): void {
   const txDeposit = Context.attachedDeposit;
@@ -12,16 +12,45 @@ export function createRoom(_isVisible: Visibility): void {
   rooms.push(room);
 }
 
-export function createGame(_roomId: RoomId): void {
+export function joinRoom(_roomId: RoomId, _isVisible: Visibility): void {
+
+}
+
+export function requestToJoinRoom(_roomId: RoomId, acct: AccountId, _isVisible: Visibility): void {
+
+}
+
+export function approveMember(_roomId: RoomId, acct: AccountId) {
+
+}
+
+export function createGame(_roomId: RoomId, _numOfPlayers: u32): void {
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, GFEE);
 
   const id = generateId();
-  const game = new Game()
+  const game = new Game(id, _numOfPlayers);
+
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id == _roomId) {
+      rooms[x].games.push(game);
+    }
+  }
 }
 
-export function play(): void {
+export function play(_roomId: RoomId, _gameId: GameId, _choice: Choice): void {
+  const txDeposit = Context.attachedDeposit;
+  verifyTxFee(txDeposit, PFEE);
 
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id == _roomId) {
+      for (let y = 0; y < rooms[x].games.length; y++) {
+        if (rooms[x].games[y].id == _gameId) {
+          rooms[x].games[y].addNewPlayer(Context.sender);
+        }
+      }
+    }
+  }
 }
 
 /**

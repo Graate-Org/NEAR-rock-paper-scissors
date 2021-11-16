@@ -1,7 +1,7 @@
 import { Context, PersistentVector, u128 } from "near-sdk-core";
-import { AccountId, GameId, PFEE, RoomId, Timestamp } from "../utils";
+import { AccountId, GameId, PFEE, PlayerId, RoomId, Timestamp } from "../utils";
 
-export enum Outcome {
+export enum Choice {
   ROCK,
   PAPER,
   SCISSOR,
@@ -23,10 +23,10 @@ export enum Visibility {
   PRIVATE,
 }
 
-export enum GameType {
-  SOLE,
-  MULTIPLE,
-}
+// export enum GameType {
+//   SOLE,
+//   MULTIPLE,
+// }
 
 @nearBindgen
 export class Room {
@@ -34,7 +34,8 @@ export class Room {
   owner: AccountId;
   members: PersistentVector<string>;
   games: PersistentVector<Game>;
-  isVisible: Visibility
+  isVisible: Visibility;
+  requests: PersistentVector<AccountId>
 
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
@@ -44,12 +45,15 @@ export class Room {
     this.isVisible = _isVisible;
     this.games = new PersistentVector<Game>("gms")
   }
+
+  addMember(acct: AccountId) {
+    this.members.push(acct);
+  }
 }
 
 @nearBindgen
 export class Game {
   id: GameId;
-  gameType: GameType;
   numOfPlayers: u32;
   players: PersistentVector<AccountId>;
   stakers: PersistentVector<AccountId>;
@@ -59,9 +63,8 @@ export class Game {
   winner: AccountId;
   reward: u128;
 
-  constructor(_id: GameId, _gameType: GameType, _numOfPlayers: u32) {
+  constructor(_id: GameId, _numOfPlayers: u32) {
     this.id = _id;
-    this.gameType = _gameType;
     this.numOfPlayers = _numOfPlayers;
 
     this.players = new PersistentVector<AccountId>("plys");
@@ -73,7 +76,7 @@ export class Game {
 
   addNewPlayer(acct: AccountId): void {
     assert(this.numOfPlayers <= this.players.length, "Maximum players reached. Join another game")
-    this.players.push;
+    this.players.push(acct);
     this.reward = u128.add(this.reward, PFEE);
   }
 
@@ -81,7 +84,18 @@ export class Game {
 
 @nearBindgen
 export class Player {
+  id: PlayerId;
+  name: AccountId;
+  choice: Choice;
 
+  constructor(_id: PlayerId, _name: AccountId) {
+    this.id = _id;
+    this.name = _name
+  }
+
+  recordChoice( _choice: Choice) {
+    this.choice = _choice;
+  }
 }
 
 @nearBindgen
