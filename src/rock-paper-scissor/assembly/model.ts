@@ -1,5 +1,5 @@
 import { Context, PersistentVector, u128 } from "near-sdk-core";
-import { AccountId, GameId, PFEE, PlayerId, RoomId, Timestamp } from "../utils";
+import { AccountId, GameId, PFEE, PlayerId, RoomId, StakeId, Timestamp } from "../utils";
 
 export enum Choice {
   ROCK,
@@ -47,7 +47,17 @@ export class Room {
   }
 
   addMember(acct: AccountId) {
+    assert(Context.sender == this.owner, "You don't have the power to add this fellow")
     this.members.push(acct);
+
+    let newRequests = new PersistentVector<AccountId>("nqs");
+    for (let x = 0; x < this.requests.length; x++) {
+      if (this.requests[x] != acct) {
+        newRequests.push(this.requests[x]);
+      }
+    }
+
+    this.requests = newRequests;
   }
 }
 
@@ -100,7 +110,16 @@ export class Player {
 
 @nearBindgen
 export class Staker {
+  id: StakeId;
+  betOn: AccountId;
+  name: AccountId;
+  stake: u128;
 
+  constructor(_id: StakeId, _betOn: AccountId, _name: AccountId) {
+    this.id = _id;
+    this.betOn = _betOn;
+    this.name = Context.sender;
+  }
 }
 
 export const rooms = new PersistentVector<Room>("r");
