@@ -1,6 +1,6 @@
 import {u128, Context } from "near-sdk-as";
-import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId } from "../utils";
-import { Choice, Game, Room, rooms, Visibility } from "./model";
+import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId, SFEE } from "../utils";
+import { Choice, Game, Player, Room, rooms, Staker, Visibility } from "./model";
 
 export function createRoom(_isVisible: boolean): void {
   const txDeposit = Context.attachedDeposit;
@@ -57,26 +57,32 @@ export function play(_roomId: RoomId, _gameId: GameId, _choice: Choice): void {
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, PFEE);
 
+  const id = generateId();
+  const player = new Player(id, Context.sender);
+
   for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
       for (let y = 0; y < rooms[x].games.length; y++) {
         if (rooms[x].games[y].id == _gameId) {
-          rooms[x].games[y].addNewPlayer(Context.sender);
+          rooms[x].games[y].addNewPlayer(player, PFEE);
         }
       }
     }
   }
 }
 
-export function stake(_roomId: RoomId, _gameId: GameId, ): void {
+export function stake(_roomId: RoomId, _gameId: GameId, stakeOn: AccountId): void {
   const txDeposit = Context.attachedDeposit;
-  verifyTxFee(txDeposit, GFEE);
+  verifyTxFee(txDeposit, SFEE);
+
+  const id = generateId();
+  const staker = new Staker(id, stakeOn, txDeposit);
 
   for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
       for (let y = 0; y < rooms[x].games.length; y++) {
         if (rooms[x].games[y].id == _gameId) {
-          rooms[x].games[y].addNewPlayer(Context.sender);
+          rooms[x].games[y].stakers.push(staker)
         }
       }
     }

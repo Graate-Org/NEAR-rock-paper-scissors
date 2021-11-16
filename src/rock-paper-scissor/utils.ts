@@ -12,6 +12,7 @@ export type PlayerId = string;
 
 export type StakeId = string;
 
+export const SFEE = u128.from("1000000000000000000000000");
 export const RFEE = u128.from("700000000000000000000000");
 export const GFEE = u128.from("500000000000000000000000");
 export const PFEE = u128.from("200000000000000000000000");

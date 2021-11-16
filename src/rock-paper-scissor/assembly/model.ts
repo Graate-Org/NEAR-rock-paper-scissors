@@ -65,8 +65,8 @@ export class Room {
 export class Game {
   id: GameId;
   numOfPlayers: u32;
-  players: PersistentVector<AccountId>;
-  stakers: PersistentVector<AccountId>;
+  players: PersistentVector<Player>;
+  stakers: PersistentVector<Staker>;
   createdBy: AccountId;
   createdAt: Timestamp;
   status: Status;
@@ -77,17 +77,17 @@ export class Game {
     this.id = _id;
     this.numOfPlayers = _numOfPlayers;
 
-    this.players = new PersistentVector<AccountId>("plys");
-    this.stakers = new PersistentVector<AccountId>("stks");
+    this.players = new PersistentVector<Player>("plys");
+    this.stakers = new PersistentVector<Staker>("stks");
     this.createdBy = Context.sender;
     this.createdAt = Context.blockTimestamp;
     this.status = Status.CREATED
   }
 
-  addNewPlayer(acct: AccountId): void {
+  addNewPlayer(_player: Player, txFee: u128): void {
     assert(this.numOfPlayers <= this.players.length, "Maximum players reached. Join another game")
-    this.players.push(acct);
-    this.reward = u128.add(this.reward, PFEE);
+    this.players.push(_player);
+    this.reward = u128.add(this.reward, txFee);
   }
 
 }
@@ -115,10 +115,11 @@ export class Staker {
   name: AccountId;
   stake: u128;
 
-  constructor(_id: StakeId, _betOn: AccountId, _name: AccountId) {
+  constructor(_id: StakeId, _betOn: AccountId, _stake: u128) {
     this.id = _id;
     this.betOn = _betOn;
     this.name = Context.sender;
+    this.stake = _stake;
   }
 }
 
