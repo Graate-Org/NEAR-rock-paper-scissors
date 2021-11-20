@@ -1,5 +1,13 @@
 import { Context, PersistentVector, RNG, u128 } from "near-sdk-core";
-import { AccountId, GameId, PFEE, PlayerId, RoomId, StakeId, Timestamp } from "../utils";
+import {
+  AccountId,
+  GameId,
+  PFEE,
+  PlayerId,
+  RoomId,
+  StakeId,
+  Timestamp,
+} from "../utils";
 
 export enum Choice {
   ROCK,
@@ -35,7 +43,7 @@ export class Room {
   members: PersistentVector<string>;
   games: PersistentVector<Game>;
   isVisible: Visibility;
-  requests: PersistentVector<AccountId>
+  requests: PersistentVector<AccountId>;
 
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
@@ -43,11 +51,14 @@ export class Room {
     this.members = new PersistentVector<string>("m");
     this.members.push(_owner);
     this.isVisible = _isVisible;
-    this.games = new PersistentVector<Game>("gms")
+    this.games = new PersistentVector<Game>("gms");
   }
 
   addMember(acct: AccountId) {
-    assert(Context.sender == this.owner, "You don't have the power to add this fellow")
+    assert(
+      Context.sender == this.owner,
+      "You don't have the power to add this fellow"
+    );
     this.members.push(acct);
 
     let newRequests = new PersistentVector<AccountId>("nqs");
@@ -70,7 +81,7 @@ export class Game {
   createdBy: AccountId;
   createdAt: Timestamp;
   status: Status;
-  winner: AccountId;
+  winners: PersistentVector<AccountId>;
   reward: u128;
 
   constructor(_id: GameId, _numOfPlayers: u32) {
@@ -81,11 +92,14 @@ export class Game {
     this.stakers = new PersistentVector<Staker>("stks");
     this.createdBy = Context.sender;
     this.createdAt = Context.blockTimestamp;
-    this.status = Status.CREATED
+    this.status = Status.CREATED;
   }
 
   addNewPlayer(_playerId: PlayerId, txFee: u128): void {
-    assert(this.numOfPlayers <= this.players.length, "Maximum players reached. Join another game");
+    assert(
+      this.numOfPlayers <= this.players.length,
+      "Maximum players reached. Join another game"
+    );
 
     const rand = new RNG<u32>(0, 2);
     const randNum = rand.next();
@@ -101,13 +115,94 @@ export class Game {
     this.players.push(player);
     this.reward = u128.add(this.reward, txFee);
 
-    if(this.players.length == 1) {
-      this.status = Status.ACTIVE
+    if (this.players.length == 1) {
+      this.status = Status.ACTIVE;
     } else if (this.players.length == this.numOfPlayers) {
-      this.status = Status.COMPLETED
+      this.status = Status.COMPLETED;
     }
   }
 
+  rewardWinner(): void {
+    if (this.numOfPlayers == 3) {
+      if (
+        (this.players[0].choice == this.players[1].choice &&
+          this.players[1].choice == this.players[2].choice &&
+          this.players[2].choice == this.players[0].choice) ||
+        (this.players[0].choice != this.players[1].choice &&
+          this.players[1].choice != this.players[2].choice &&
+          this.players[2].choice != this.players[0].choice)
+      ) {
+        this.winners.push("draw");
+      } else {
+      }
+    }
+
+    if (this.players[0].choice == this.players[1].choice) {
+      this.winners.push("draw");
+    }
+    if (
+      this.players[1].choice == Choice.ROCK &&
+      this.players[0].choice == Choice.PAPER
+    ) {
+      this.winners.push(this.players[0].name);
+
+      if (this.numOfPlayers == 3 && this.players[2].choice == Choice.PAPER) {
+        this.winners.push(this.players[2].name);
+      }
+    }
+    if (
+      this.players[1].choice === Choice.ROCK &&
+      this.players[0].choice === Choice.SCISSOR
+    ) {
+      this.winners.push(this.players[1].name);
+
+      if (this.numOfPlayers == 3 && this.players[2].choice == Choice.ROCK) {
+        this.winners.push(this.players[2].name);
+      }
+    }
+    if (
+      this.players[1].choice == Choice.PAPER &&
+      this.players[0].choice == Choice.SCISSOR
+    ) {
+      this.winners.push(this.players[0].name);
+
+      if (this.numOfPlayers == 3 && this.players[2].choice == Choice.SCISSOR) {
+        this.winners.push(this.players[2].name);
+      }
+    }
+    if (
+      this.players[1].choice == Choice.PAPER &&
+      this.players[0].choice == Choice.ROCK
+    ) {
+      this.winners.push(this.players[1].name);
+
+      if (this.numOfPlayers == 3 && this.players[2].choice == Choice.PAPER) {
+        this.winners.push(this.players[2].name);
+      }
+    }
+    if (
+      this.players[1].choice == Choice.SCISSOR &&
+      this.players[0].choice == Choice.ROCK
+    ) {
+      this.winners.push(this.players[0].name);
+
+      if (this.numOfPlayers == 3 && this.players[2].choice == Choice.ROCK) {
+        this.winners.push(this.players[2].name);
+      }
+    }
+    if (
+      this.players[1].choice == Choice.SCISSOR &&
+      this.players[0].choice == Choice.PAPER
+    ) {
+      this.winners.push(this.players[1].name);
+
+      if (this.numOfPlayers == 3 && this.players[2].choice == Choice.SCISSOR) {
+        this.winners.push(this.players[2].name);
+      }
+    }
+  }
+
+  rewardStakers(): void {}
 }
 
 @nearBindgen
@@ -122,7 +217,7 @@ export class Player {
     this.choice = _choice;
   }
 
-  recordChoice( _choice: Choice) {
+  recordChoice(_choice: Choice) {
     this.choice = _choice;
   }
 }
@@ -143,6 +238,6 @@ export class Staker {
 }
 
 export const rooms = new PersistentVector<Room>("r");
-export const players = new PersistentVector<Player>("p")
-export const stakers = new PersistentVector<Staker>("s")
-export const games = new PersistentVector<Game>("g") 
+export const players = new PersistentVector<Player>("p");
+export const stakers = new PersistentVector<Staker>("s");
+export const games = new PersistentVector<Game>("g");
