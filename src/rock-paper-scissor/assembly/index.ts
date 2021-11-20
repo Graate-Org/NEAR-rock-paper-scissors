@@ -58,13 +58,12 @@ export function play(_roomId: RoomId, _gameId: GameId, _choice: Choice): void {
   verifyTxFee(txDeposit, PFEE);
 
   const id = generateId();
-  const player = new Player(id, Context.sender);
 
   for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
       for (let y = 0; y < rooms[x].games.length; y++) {
         if (rooms[x].games[y].id == _gameId) {
-          rooms[x].games[y].addNewPlayer(player, PFEE);
+          rooms[x].games[y].addNewPlayer(id, PFEE);
         }
       }
     }

@@ -1,4 +1,4 @@
-import { Context, PersistentVector, u128 } from "near-sdk-core";
+import { Context, PersistentVector, RNG, u128 } from "near-sdk-core";
 import { AccountId, GameId, PFEE, PlayerId, RoomId, StakeId, Timestamp } from "../utils";
 
 export enum Choice {
@@ -84,9 +84,22 @@ export class Game {
     this.status = Status.CREATED
   }
 
-  addNewPlayer(_player: Player, txFee: u128): void {
+  addNewPlayer(_playerId: PlayerId, txFee: u128): void {
     assert(this.numOfPlayers <= this.players.length, "Maximum players reached. Join another game")
-    this.players.push(_player);
+
+    const rand = new RNG<u32>(0, 2);
+    const randNum = rand.next();
+    let choice = Choice.PAPER;
+
+    if (randNum == 1) {
+      choice = Choice.ROCK;
+    } else if (randNum == 2) {
+      choice = Choice.SCISSOR;
+    }
+
+    const player = new Player(_playerId, Context.sender, choice);
+    this.players.push(player);
+
     this.reward = u128.add(this.reward, txFee);
   }
 
@@ -98,9 +111,10 @@ export class Player {
   name: AccountId;
   choice: Choice;
 
-  constructor(_id: PlayerId, _name: AccountId) {
+  constructor(_id: PlayerId, _name: AccountId, _choice: Choice) {
     this.id = _id;
-    this.name = _name
+    this.name = _name;
+    this.choice = _choice;
   }
 
   recordChoice( _choice: Choice) {
