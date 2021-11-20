@@ -135,11 +135,12 @@ export class Game {
         this.winners.push("draw");
       } else {
       }
+    } else if (this.numOfPlayers == 2) {
+      if (this.players[0].choice == this.players[1].choice) {
+        this.winners.push("draw");
+      }
     }
 
-    if (this.players[0].choice == this.players[1].choice) {
-      this.winners.push("draw");
-    }
     if (
       this.players[1].choice == Choice.ROCK &&
       this.players[0].choice == Choice.PAPER
