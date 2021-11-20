@@ -85,7 +85,7 @@ export class Game {
   }
 
   addNewPlayer(_playerId: PlayerId, txFee: u128): void {
-    assert(this.numOfPlayers <= this.players.length, "Maximum players reached. Join another game")
+    assert(this.numOfPlayers <= this.players.length, "Maximum players reached. Join another game");
 
     const rand = new RNG<u32>(0, 2);
     const randNum = rand.next();
@@ -99,8 +99,13 @@ export class Game {
 
     const player = new Player(_playerId, Context.sender, choice);
     this.players.push(player);
-
     this.reward = u128.add(this.reward, txFee);
+
+    if(this.players.length == 1) {
+      this.status = Status.ACTIVE
+    } else if (this.players.length == this.numOfPlayers) {
+      this.status = Status.COMPLETED
+    }
   }
 
 }
