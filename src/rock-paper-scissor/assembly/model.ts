@@ -3,10 +3,8 @@ import {
   ContractPromiseBatch,
   PersistentVector,
   PersistentMap,
-  RNG,
   u128,
   math,
-  logging,
 } from "near-sdk-core";
 import {
   AccountId,
@@ -39,11 +37,6 @@ export enum Visibility {
   PRIVATE,
 }
 
-// export enum GameType {
-//   SOLE,
-//   MULTIPLE,
-// }
-
 @nearBindgen
 export class Room {
   id: RoomId;
@@ -62,11 +55,11 @@ export class Game {
   id: GameId;
   numOfPlayers: i32;
   players: PersistentMap<GameId, Player[]>;
-  stakers: PersistentVector<Staker>;
+  stakers: PersistentMap<GameId, Staker[]>;
   createdBy: AccountId;
   createdAt: Timestamp;
   status: Status;
-  winners: PersistentVector<AccountId>;
+  winners: PersistentMap<GameId, AccountId[]>;
   pool: u128;
 
   constructor(public roomId: RoomId, _id: GameId, _numOfPlayers: u32) {
@@ -74,11 +67,18 @@ export class Game {
     this.numOfPlayers = _numOfPlayers;
 
     this.players = new PersistentMap<GameId, Player[]>("plys");
-    this.stakers = new PersistentVector<Staker>("stks");
+    this.players.set(this.id, [] as Player[]);
+
+    this.stakers = new PersistentMap<GameId, Staker[]>("stks");
+    this.stakers.set(this.id, [] as Staker[]);
+
     this.createdBy = Context.sender;
     this.createdAt = Context.blockTimestamp;
     this.status = Status.CREATED;
-    this.winners = new PersistentVector<AccountId>("w");
+
+    this.winners = new PersistentMap<GameId, AccountId[]>("w");
+    this.winners.set(this.id, [] as AccountId[]);
+
     this.pool = u128.Zero;
   }
 
@@ -93,7 +93,6 @@ export class Game {
       );
     }
     const randNum = randomNum();
-    logging.log(randNum.toString());
 
     let choice = Choice.ROCK
 
@@ -121,115 +120,117 @@ export class Game {
 
   rewardWinner(_gameId: GameId): void {
     const players = this.players.get(_gameId) as Player[];
+    const winners = this.winners.get(_gameId) as AccountId[];
 
-    // if (this.numOfPlayers == 3) {
-    //   if (
-    //     (this.players[0].choice == this.players[1].choice &&
-    //       this.players[1].choice == this.players[2].choice &&
-    //       this.players[2].choice == this.players[0].choice) ||
-    //     (this.players[0].choice != this.players[1].choice &&
-    //       this.players[1].choice != this.players[2].choice &&
-    //       this.players[2].choice != this.players[0].choice)
-    //   ) {
-    //     this.winners.push("draw");
-    //   } else {
-    //   }
-    // } else if (this.numOfPlayers == 2) {
-    //   if (this.players[0].choice == this.players[1].choice) {
-    //     this.winners.push("draw");
-    //   }
-    // }
+    if (this.numOfPlayers == 3) {
+      if (
+        (players[0].choice == players[1].choice &&
+          players[1].choice == players[2].choice &&
+          players[2].choice == players[0].choice) ||
+        (players[0].choice != players[1].choice &&
+          players[1].choice != players[2].choice &&
+          players[2].choice != players[0].choice)
+      ) {
+       winners.push("draw");
+      } else {
+      }
+    } else if (this.numOfPlayers == 2) {
+      if (players[0].choice == players[1].choice) {
+        winners.push("draw");
+      }
+    }
 
-    // if (
-    //   this.players[1].choice == Choice.ROCK &&
-    //   this.players[0].choice == Choice.PAPER
-    // ) {
-    //   this.winners.push(this.players[0].name);
-    //   this.transfer(this.players[0].name, this.players[0].txFee);
-    //   this.rewardStakers(this.players[0].name);
+    if (
+      players[1].choice == Choice.ROCK &&
+      players[0].choice == Choice.PAPER
+    ) {
+      winners.push(players[0].name);
+      this.transfer(players[0].name, players[0].txFee);
+      this.rewardStakers(_gameId, players[0].name);
 
-    //   if (this.numOfPlayers == 3 && this.players[2].choice == Choice.PAPER) {
-    //     this.winners.push(this.players[2].name);
-    //     this.transfer(this.players[2].name, this.players[2].txFee);
-    //     this.rewardStakers(this.players[2].name);
-    //   }
-    // }
-    // if (
-    //   this.players[1].choice === Choice.ROCK &&
-    //   this.players[0].choice === Choice.SCISSOR
-    // ) {
-    //   this.winners.push(this.players[1].name);
-    //   this.transfer(this.players[1].name, this.players[1].txFee);
-    //   this.rewardStakers(this.players[1].name);
+      if (this.numOfPlayers == 3 && players[2].choice == Choice.PAPER) {
+        winners.push(players[2].name);
+        this.transfer(players[2].name, players[2].txFee);
+        this.rewardStakers(_gameId, players[2].name);
+      }
+    }
+    if (
+      players[1].choice === Choice.ROCK &&
+      players[0].choice === Choice.SCISSOR
+    ) {
+      winners.push(players[1].name);
+      this.transfer(players[1].name, players[1].txFee);
+      this.rewardStakers(_gameId, players[1].name);
 
-    //   if (this.numOfPlayers == 3 && this.players[2].choice == Choice.ROCK) {
-    //     this.winners.push(this.players[2].name);
-    //     this.transfer(this.players[2].name, this.players[2].txFee);
-    //     this.rewardStakers(this.players[2].name);
-    //   }
-    // }
-    // if (
-    //   this.players[1].choice == Choice.PAPER &&
-    //   this.players[0].choice == Choice.SCISSOR
-    // ) {
-    //   this.winners.push(this.players[0].name);
-    //   this.transfer(this.players[0].name, this.players[0].txFee);
-    //   this.rewardStakers(this.players[0].name);
+      if (this.numOfPlayers == 3 && players[2].choice == Choice.ROCK) {
+        winners.push(players[2].name);
+        this.transfer(players[2].name, players[2].txFee);
+        this.rewardStakers(_gameId, players[2].name);
+      }
+    }
+  
+     if( players[1].choice == Choice.PAPER &&
+      players[0].choice == Choice.SCISSOR
+    ) {
+      winners.push(players[0].name)
+      this.transfer(players[0].name, players[0].txFee);
+      this.rewardStakers(_gameId, players[0].name);
 
-    //   if (this.numOfPlayers == 3 && this.players[2].choice == Choice.SCISSOR) {
-    //     this.winners.push(this.players[2].name);
-    //     this.transfer(this.players[2].name, this.players[2].txFee);
-    //     this.rewardStakers(this.players[2].name);
-    //   }
-    // }
-    // if (
-    //   this.players[1].choice == Choice.PAPER &&
-    //   this.players[0].choice == Choice.ROCK
-    // ) {
-    //   this.winners.push(this.players[1].name);
-    //   this.transfer(this.players[1].name, this.players[1].txFee);
-    //   this.rewardStakers(this.players[1].name);
+      if (this.numOfPlayers == 3 && players[2].choice == Choice.SCISSOR) {
+        winners.push(players[2].name);
+        this.transfer(players[2].name, players[2].txFee);
+        this.rewardStakers(_gameId, players[2].name);
+      }
+    }
+    if (
+      players[1].choice == Choice.PAPER &&
+      players[0].choice == Choice.ROCK
+    ) {
+      winners.push(players[1].name);
+      this.transfer(players[1].name, players[1].txFee);
+      this.rewardStakers(_gameId, players[1].name);
 
-    //   if (this.numOfPlayers == 3 && this.players[2].choice == Choice.PAPER) {
-    //     this.winners.push(this.players[2].name);
-    //     this.transfer(this.players[2].name, this.players[2].txFee);
-    //     this.rewardStakers(this.players[2].name);
-    //   }
-    // }
-    // if (
-    //   this.players[1].choice == Choice.SCISSOR &&
-    //   this.players[0].choice == Choice.ROCK
-    // ) {
-    //   this.winners.push(this.players[0].name);
-    //   this.transfer(this.players[0].name, this.players[0].txFee);
-    //   this.rewardStakers(this.players[0].name);
+      if (this.numOfPlayers == 3 && players[2].choice == Choice.PAPER) {
+        winners.push(players[2].name);
+        this.transfer(players[2].name, players[2].txFee);
+        this.rewardStakers(_gameId, players[2].name);
+      }
+    }
+    if (
+      players[1].choice == Choice.SCISSOR &&
+      players[0].choice == Choice.ROCK
+    ) {
+      winners.push(players[0].name);
+      this.transfer(players[0].name, players[0].txFee);
+      this.rewardStakers(_gameId, players[0].name);
 
-    //   if (this.numOfPlayers == 3 && this.players[2].choice == Choice.ROCK) {
-    //     this.winners.push(this.players[2].name);
-    //     this.transfer(this.players[2].name, this.players[2].txFee);
-    //     this.rewardStakers(this.players[2].name);
-    //   }
-    // }
-    // if (
-    //   this.players[1].choice == Choice.SCISSOR &&
-    //   this.players[0].choice == Choice.PAPER
-    // ) {
-    //   this.winners.push(this.players[1].name);
-    //   this.transfer(this.players[1].name, this.players[1].txFee);
-    //   this.rewardStakers(this.players[1].name);
+      if (this.numOfPlayers == 3 && players[2].choice == Choice.ROCK) {winners.push(players[2].name);
+        this.transfer(players[2].name, players[2].txFee);
+        this.rewardStakers(_gameId, players[2].name);
+      }
+    }
+    if (
+      players[1].choice == Choice.SCISSOR &&
+      players[0].choice == Choice.PAPER
+    ) {
+      winners.push(players[1].name);
+      this.transfer(players[1].name, players[1].txFee);
+      this.rewardStakers(_gameId, players[1].name);
 
-    //   if (this.numOfPlayers == 3 && this.players[2].choice == Choice.SCISSOR) {
-    //     this.winners.push(this.players[2].name);
-    //     this.transfer(this.players[2].name, this.players[2].txFee);
-    //     this.rewardStakers(this.players[2].name);
-    //   }
-    // }
+      if (this.numOfPlayers == 3 && players[2].choice == Choice.SCISSOR) {
+        winners.push(players[2].name);
+        this.transfer(players[2].name, players[2].txFee);
+        this.rewardStakers(_gameId, players[2].name);
+      }
+    }
   }
 
-  rewardStakers(_betOn: AccountId): void {
-    for(let i = 0; i < this.stakers.length; i++) {
-      if (this.stakers[i].betOn == _betOn) {
-        this.transfer(this.stakers[i].name, this.stakers[i].stake);
+  rewardStakers(_gameId: GameId, _betOn: AccountId): void {
+    const stakers = this.stakers.get(_gameId) as Staker[];
+
+    for(let i = 0; i < stakers.length; i++) {
+      if (stakers[i].betOn == _betOn) {
+        this.transfer(stakers[i].name, stakers[i].stake);
       }
     }
   }

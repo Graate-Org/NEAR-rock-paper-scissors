@@ -92,7 +92,7 @@ export function play(_gameId: GameId): void {
       const game = games.swap_remove(x) as Game;
       const players = game.players.get(game.id) as Player[]
       assert(
-        players.length <= game.numOfPlayers,
+        players.length + 1 <= game.numOfPlayers,
         "Maximum players reached. Join another game"
       );
       game.addNewPlayer(game.id, id, PFEE);
