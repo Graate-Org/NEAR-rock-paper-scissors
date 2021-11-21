@@ -1,6 +1,6 @@
 import {u128, Context, PersistentVector,RNG, math } from "near-sdk-as";
 import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId, SFEE } from "../utils";
-import { Game, games, Member, members, Request, requests, RequestStatus, Room, rooms, Staker, Visibility } from "./model";
+import { Game, games, Member, members, Player, Request, requests, RequestStatus, Room, rooms, Staker, Visibility } from "./model";
 
 export function createRoom(_isVisible: boolean): void {
   const txDeposit = Context.attachedDeposit;
@@ -90,11 +90,12 @@ export function play(_gameId: GameId): void {
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
       const game = games.swap_remove(x) as Game;
+      const players = game.players.get(game.id) as Player[]
       assert(
-        game.players.length <= game.numOfPlayers,
+        players.length <= game.numOfPlayers,
         "Maximum players reached. Join another game"
       );
-      game.addNewPlayer(id, PFEE);
+      game.addNewPlayer(game.id, id, PFEE);
 
       games.push(game);
     }
