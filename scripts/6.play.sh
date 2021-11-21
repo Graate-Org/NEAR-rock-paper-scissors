@@ -1,1 +1,1 @@
-near call $CONTRACT play --account_id $MEMBER '{"_gameId": "GM-1637512564271533651"}' --amount 0.2
+near call $CONTRACT play --account_id $MEMBER '{"_gameId": "GM-1637536221607916763"}' --amount 0.2

@@ -102,23 +102,23 @@ export function play(_gameId: GameId): void {
   }
 }
 
-// export function stake(_roomId: RoomId, _gameId: GameId, stakeOn: AccountId): void {
-//   const txDeposit = Context.attachedDeposit;
-//   verifyTxFee(txDeposit, SFEE);
+export function stake(_gameId: GameId, stakeOn: AccountId): void {
+  const txDeposit = Context.attachedDeposit;
+  verifyTxFee(txDeposit, SFEE);
 
-//   const id = generateId("ST-");
-//   const staker = new Staker(id, stakeOn, txDeposit);
+  const id = generateId("ST-");
+  const staker = new Staker(_gameId, stakeOn, SFEE);
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      const game = games.swap_remove(x) as Game;
+      const stakers = game.stakers.get(game.id) as Staker[]
+      
+      stakers.push(staker);
 
-//   for (let x = 0; x < rooms.length; x++) {
-//     if (rooms[x].id == _roomId) {
-//       for (let y = 0; y < rooms[x].games.length; y++) {
-//         if (rooms[x].games[y].id == _gameId) {
-//           rooms[x].games[y].stakers.push(staker)
-//         }
-//       }
-//     }
-//   }
-// }
+      games.push(game);
+    }
+  }
+}
 
 function verifyTxFee(deposit: u128, Fee: u128): void {
   assert(deposit >= Fee, "You need to have at least " + Fee.toString() + " yocto of NEAR tokens to continue");
@@ -126,39 +126,4 @@ function verifyTxFee(deposit: u128, Fee: u128): void {
 
 function generateId(prefix: string): string {
   return prefix + Context.blockTimestamp.toString();
-}
-
-// function addMember(room: Room, acct: AccountId): Room {
-//   assert(
-//     Context.sender == room.owner,
-//     "You don't have the power to add this fellow"
-//   );
-//   let newMembers = new PersistentVector<AccountId>("m")
-
-//   for (let i = 0; i < room.members.length; i++) {
-//     newMembers.push(room.members[i]);
-//   }
-
-//   room.members = newMembers;
-
-//   let newRequests = new PersistentVector<AccountId>("nqs");
-//   for (let x = 0; x < room.requests.length; x++) {
-//     if (room.requests[x] != acct) {
-//       newRequests.push(room.requests[x]);
-//     }
-//   }
-
-//   room.requests = newRequests;
-
-//   return room;
-// }
-
-export function randomNum(): u32 {
-  let buf = math.randomBuffer(3);
-  return (
-    (((0xff & buf[0]) << 1) |
-      ((0xff & buf[1]) << 2) |
-      ((0xff & buf[2]) << 0)) %
-    3
-  );
 }

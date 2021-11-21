@@ -132,11 +132,14 @@ export class Game {
           players[2].choice != players[0].choice)
       ) {
        winners.push("draw");
-      } else {
+       this.winners.set(_gameId, winners);
+       return;
       }
     } else if (this.numOfPlayers == 2) {
       if (players[0].choice == players[1].choice) {
         winners.push("draw");
+        this.winners.set(_gameId, winners);
+        return;
       }
     }
 
@@ -145,6 +148,7 @@ export class Game {
       players[0].choice == Choice.PAPER
     ) {
       winners.push(players[0].name);
+
       this.transfer(players[0].name, players[0].txFee);
       this.rewardStakers(_gameId, players[0].name);
 
@@ -153,6 +157,8 @@ export class Game {
         this.transfer(players[2].name, players[2].txFee);
         this.rewardStakers(_gameId, players[2].name);
       }
+
+      this.winners.set(_gameId, winners);
     }
     if (
       players[1].choice === Choice.ROCK &&
@@ -167,6 +173,8 @@ export class Game {
         this.transfer(players[2].name, players[2].txFee);
         this.rewardStakers(_gameId, players[2].name);
       }
+
+      this.winners.set(_gameId, winners);
     }
   
      if( players[1].choice == Choice.PAPER &&
@@ -181,6 +189,8 @@ export class Game {
         this.transfer(players[2].name, players[2].txFee);
         this.rewardStakers(_gameId, players[2].name);
       }
+
+      this.winners.set(_gameId, winners);
     }
     if (
       players[1].choice == Choice.PAPER &&
@@ -195,6 +205,8 @@ export class Game {
         this.transfer(players[2].name, players[2].txFee);
         this.rewardStakers(_gameId, players[2].name);
       }
+
+      this.winners.set(_gameId, winners);
     }
     if (
       players[1].choice == Choice.SCISSOR &&
@@ -208,6 +220,8 @@ export class Game {
         this.transfer(players[2].name, players[2].txFee);
         this.rewardStakers(_gameId, players[2].name);
       }
+
+      this.winners.set(_gameId, winners);
     }
     if (
       players[1].choice == Choice.SCISSOR &&
@@ -222,6 +236,8 @@ export class Game {
         this.transfer(players[2].name, players[2].txFee);
         this.rewardStakers(_gameId, players[2].name);
       }
+
+      this.winners.set(_gameId, winners);
     }
   }
 
