@@ -4,6 +4,7 @@ import {
   PersistentVector,
   RNG,
   u128,
+  math,
 } from "near-sdk-core";
 import {
   AccountId,
@@ -80,17 +81,21 @@ export class Game {
   }
 
   addNewPlayer(_playerId: PlayerId, txFee: u128): void {
-    assert(
-      this.players.length <= this.numOfPlayers,
-      "Maximum players reached. Join another game"
-    );
+    function randomNum(): u32 {
+      let buf = math.randomBuffer(3);
+      return (
+        (((0xff & buf[0]) << 1) |
+          ((0xff & buf[1]) << 2) |
+          ((0xff & buf[2]) << 0)) %
+        3
+      );
+    }
+    const randNum = randomNum();
 
-    const rand = new RNG<u32>(0, 2);
-    const randNum = rand.next();
-    let choice = Choice.PAPER;
+    let choice = Choice.ROCK
 
     if (randNum == 1) {
-      choice = Choice.ROCK;
+      choice = Choice.PAPER;
     } else if (randNum == 2) {
       choice = Choice.SCISSOR;
     }

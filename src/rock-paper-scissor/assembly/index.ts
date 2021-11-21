@@ -1,4 +1,4 @@
-import {u128, Context, PersistentVector } from "near-sdk-as";
+import {u128, Context, PersistentVector,RNG, math } from "near-sdk-as";
 import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId, SFEE } from "../utils";
 import { Game, games, Member, members, Request, requests, RequestStatus, Room, rooms, Staker, Visibility } from "./model";
 
@@ -89,10 +89,14 @@ export function play(_gameId: GameId): void {
 
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
-      const game = games[x] as Game;
+      const game = games.swap_remove(x) as Game;
+      assert(
+        game.players.length <= game.numOfPlayers,
+        "Maximum players reached. Join another game"
+      );
       game.addNewPlayer(id, PFEE);
 
-      games.replace(x, game);
+      games.push(game);
     }
   }
 }
@@ -148,6 +152,12 @@ function generateId(prefix: string): string {
 //   return room;
 // }
 
-export function getMember(): Member {
-  return members[0];
+export function randomNum(): u32 {
+  let buf = math.randomBuffer(3);
+  return (
+    (((0xff & buf[0]) << 1) |
+      ((0xff & buf[1]) << 2) |
+      ((0xff & buf[2]) << 0)) %
+    3
+  );
 }
