@@ -46,13 +46,11 @@ export class Room {
   id: RoomId;
   owner: AccountId;
   isVisible: Visibility;
-  requests: PersistentVector<AccountId>;
 
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
     this.owner = _owner;
     this.isVisible = _isVisible;
-    this.requests = new PersistentVector<AccountId>("req")
   }
 }
 
@@ -68,7 +66,7 @@ export class Game {
   winners: PersistentVector<AccountId>;
   pool: u128;
 
-  constructor(_id: GameId, _numOfPlayers: u32) {
+  constructor(public roomId: RoomId, _id: GameId, _numOfPlayers: u32) {
     this.id = _id;
     this.numOfPlayers = _numOfPlayers;
 
@@ -260,6 +258,7 @@ export class Staker {
   }
 }
 
+@nearBindgen
 export class Member {
   roomId: RoomId;
   accountId: AccountId;
@@ -270,16 +269,23 @@ export class Member {
   }
 }
 
+@nearBindgen
 export class Request {
   roomId: RoomId;
   accountId: AccountId;
-  state: 'Created' | 'Rejected' | 'Accepted';
+  state: RequestStatus;
 
   constructor(_roomId: RoomId, _accountId: AccountId) {
     this.roomId = _roomId;
     this.accountId = _accountId;
-    this.state = "Created";
+    this.state = RequestStatus.CREATED;
   }
+}
+
+export enum RequestStatus {
+  CREATED,
+  ACCEPTED,
+  REJECTED
 }
 
 export const rooms = new PersistentVector<Room>("r");
@@ -287,5 +293,5 @@ export const players = new PersistentVector<Player>("p");
 export const stakers = new PersistentVector<Staker>("s");
 export const games = new PersistentVector<Game>("g");
 export const members = new PersistentVector<Member>("m");
-export const requests = new PersistentVector<Request>("m");
+export const requests = new PersistentVector<Request>("req");
 

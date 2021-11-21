@@ -1,1 +1,1 @@
-near call $CONTRACT requestToJoinRoom --account_id $OWNER '{"_roomId": "RM-1637383841462574126", "_isVisible": true}' --amount 0.1
+near call $CONTRACT requestToJoinPrivateRoom --account_id $MEMBER '{"_roomId": "RM-1637470256446411938"}' --amount 0.1

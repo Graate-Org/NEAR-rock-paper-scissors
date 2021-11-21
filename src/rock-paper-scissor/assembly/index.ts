@@ -1,6 +1,6 @@
 import {u128, Context, PersistentVector } from "near-sdk-as";
 import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId, SFEE } from "../utils";
-import { Game, Member, members, Request, requests, Room, rooms, Staker, Visibility } from "./model";
+import { Game, games, Member, members, Request, requests, RequestStatus, Room, rooms, Staker, Visibility } from "./model";
 
 export function createRoom(_isVisible: boolean): void {
   const txDeposit = Context.attachedDeposit;
@@ -10,6 +10,9 @@ export function createRoom(_isVisible: boolean): void {
   const room = new Room(id, Context.sender, _isVisible ? Visibility.PUBLIC: Visibility.PRIVATE);
 
   rooms.push(room);
+
+  const member = new Member(id, Context.sender);
+  members.push(member);
 }
 
 export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
@@ -59,46 +62,40 @@ export function approveMember(_roomId: RoomId, acct: AccountId): void {
   const member = new Member(_roomId, acct);
   members.push(member);
 
-  let newRequests = new PersistentVector<Member>("nrqs");
   for (let x = 0; x < requests.length; x++) {
     if (requests[x].accountId == acct) {
      const request = requests[x];
-     request.state = "Accepted";
+     request.state = RequestStatus.ACCEPTED;
      requests.replace(x, request);
     }
   }
 }
 
-// export function createGame(_roomId: RoomId, _numOfPlayers: u32): void {
-//   const txDeposit = Context.attachedDeposit;
-//   verifyTxFee(txDeposit, GFEE);
+export function createGame(_roomId: RoomId, _numOfPlayers: u32): void {
+  const txDeposit = Context.attachedDeposit;
+  verifyTxFee(txDeposit, GFEE);
 
-//   const id = generateId("GM-");
-//   const game = new Game(id, _numOfPlayers);
+  const id = generateId("GM-");
+  const game = new Game(_roomId, id, _numOfPlayers);
 
-//   for (let x = 0; x < rooms.length; x++) {
-//     if (rooms[x].id == _roomId) {
-//       rooms[x].games.push(game);
-//     }
-//   }
-// }
+  games.push(game); 
+}
 
-// export function play(_roomId: RoomId, _gameId: GameId): void {
-//   const txDeposit = Context.attachedDeposit;
-//   verifyTxFee(txDeposit, PFEE);
+export function play(_gameId: GameId): void {
+  const txDeposit = Context.attachedDeposit;
+  verifyTxFee(txDeposit, PFEE);
 
-//   const id = generateId("PL-");
+  const id = generateId("PL-");
 
-//   for (let x = 0; x < rooms.length; x++) {
-//     if (rooms[x].id == _roomId) {
-//       for (let y = 0; y < rooms[x].games.length; y++) {
-//         if (rooms[x].games[y].id == _gameId) {
-//           rooms[x].games[y].addNewPlayer(id, PFEE);
-//         }
-//       }
-//     }
-//   }
-// }
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      const game = games[x] as Game;
+      game.addNewPlayer(id, PFEE);
+
+      games.replace(x, game);
+    }
+  }
+}
 
 // export function stake(_roomId: RoomId, _gameId: GameId, stakeOn: AccountId): void {
 //   const txDeposit = Context.attachedDeposit;
@@ -150,3 +147,7 @@ function generateId(prefix: string): string {
 
 //   return room;
 // }
+
+export function getMember(): Member {
+  return members[0];
+}
