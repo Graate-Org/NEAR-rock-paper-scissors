@@ -1,0 +1,1 @@
+near call $CONTRACT createRoom --account_id $OWNER '{"_isVisible": true}' --amount 0.7

@@ -1,0 +1,1 @@
+near call $CONTRACT joinRoom --account_id $MEMBER '{"_roomId": "RM-1637413598266720874", "_isVisible": true}'

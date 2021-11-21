@@ -1,8 +1,13 @@
-import { Context, PersistentVector, RNG, u128 } from "near-sdk-core";
+import {
+  Context,
+  ContractPromiseBatch,
+  PersistentVector,
+  RNG,
+  u128,
+} from "near-sdk-core";
 import {
   AccountId,
   GameId,
-  PFEE,
   PlayerId,
   RoomId,
   StakeId,
@@ -40,7 +45,7 @@ export enum Visibility {
 export class Room {
   id: RoomId;
   owner: AccountId;
-  members: PersistentVector<string>;
+  members: PersistentVector<AccountId>;
   games: PersistentVector<Game>;
   isVisible: Visibility;
   requests: PersistentVector<AccountId>;
@@ -48,41 +53,25 @@ export class Room {
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
     this.owner = _owner;
-    this.members = new PersistentVector<string>("m");
+    this.members = new PersistentVector<AccountId>("m");
     this.members.push(_owner);
     this.isVisible = _isVisible;
     this.games = new PersistentVector<Game>("gms");
-  }
-
-  addMember(acct: AccountId) {
-    assert(
-      Context.sender == this.owner,
-      "You don't have the power to add this fellow"
-    );
-    this.members.push(acct);
-
-    let newRequests = new PersistentVector<AccountId>("nqs");
-    for (let x = 0; x < this.requests.length; x++) {
-      if (this.requests[x] != acct) {
-        newRequests.push(this.requests[x]);
-      }
-    }
-
-    this.requests = newRequests;
+    this.requests = new PersistentVector<AccountId>("req")
   }
 }
 
 @nearBindgen
 export class Game {
   id: GameId;
-  numOfPlayers: u32;
+  numOfPlayers: i32;
   players: PersistentVector<Player>;
   stakers: PersistentVector<Staker>;
   createdBy: AccountId;
   createdAt: Timestamp;
   status: Status;
   winners: PersistentVector<AccountId>;
-  reward: u128;
+  pool: u128;
 
   constructor(_id: GameId, _numOfPlayers: u32) {
     this.id = _id;
@@ -93,11 +82,13 @@ export class Game {
     this.createdBy = Context.sender;
     this.createdAt = Context.blockTimestamp;
     this.status = Status.CREATED;
+    this.winners = new PersistentVector<AccountId>("w");
+    this.pool = u128.Zero;
   }
 
   addNewPlayer(_playerId: PlayerId, txFee: u128): void {
     assert(
-      this.numOfPlayers <= this.players.length,
+      this.players.length <= this.numOfPlayers,
       "Maximum players reached. Join another game"
     );
 
@@ -111,14 +102,15 @@ export class Game {
       choice = Choice.SCISSOR;
     }
 
-    const player = new Player(_playerId, Context.sender, choice);
+    const player = new Player(_playerId, Context.sender, choice, txFee);
     this.players.push(player);
-    this.reward = u128.add(this.reward, txFee);
+    this.pool = u128.add(this.pool, txFee);
 
     if (this.players.length == 1) {
       this.status = Status.ACTIVE;
     } else if (this.players.length == this.numOfPlayers) {
       this.status = Status.COMPLETED;
+      this.rewardWinner();
     }
   }
 
@@ -146,9 +138,13 @@ export class Game {
       this.players[0].choice == Choice.PAPER
     ) {
       this.winners.push(this.players[0].name);
+      this.transfer(this.players[0].name, this.players[0].txFee);
+      this.rewardStakers(this.players[0].name);
 
       if (this.numOfPlayers == 3 && this.players[2].choice == Choice.PAPER) {
         this.winners.push(this.players[2].name);
+        this.transfer(this.players[2].name, this.players[2].txFee);
+        this.rewardStakers(this.players[2].name);
       }
     }
     if (
@@ -156,9 +152,13 @@ export class Game {
       this.players[0].choice === Choice.SCISSOR
     ) {
       this.winners.push(this.players[1].name);
+      this.transfer(this.players[1].name, this.players[1].txFee);
+      this.rewardStakers(this.players[1].name);
 
       if (this.numOfPlayers == 3 && this.players[2].choice == Choice.ROCK) {
         this.winners.push(this.players[2].name);
+        this.transfer(this.players[2].name, this.players[2].txFee);
+        this.rewardStakers(this.players[2].name);
       }
     }
     if (
@@ -166,9 +166,13 @@ export class Game {
       this.players[0].choice == Choice.SCISSOR
     ) {
       this.winners.push(this.players[0].name);
+      this.transfer(this.players[0].name, this.players[0].txFee);
+      this.rewardStakers(this.players[0].name);
 
       if (this.numOfPlayers == 3 && this.players[2].choice == Choice.SCISSOR) {
         this.winners.push(this.players[2].name);
+        this.transfer(this.players[2].name, this.players[2].txFee);
+        this.rewardStakers(this.players[2].name);
       }
     }
     if (
@@ -176,9 +180,13 @@ export class Game {
       this.players[0].choice == Choice.ROCK
     ) {
       this.winners.push(this.players[1].name);
+      this.transfer(this.players[1].name, this.players[1].txFee);
+      this.rewardStakers(this.players[1].name);
 
       if (this.numOfPlayers == 3 && this.players[2].choice == Choice.PAPER) {
         this.winners.push(this.players[2].name);
+        this.transfer(this.players[2].name, this.players[2].txFee);
+        this.rewardStakers(this.players[2].name);
       }
     }
     if (
@@ -186,9 +194,13 @@ export class Game {
       this.players[0].choice == Choice.ROCK
     ) {
       this.winners.push(this.players[0].name);
+      this.transfer(this.players[0].name, this.players[0].txFee);
+      this.rewardStakers(this.players[0].name);
 
       if (this.numOfPlayers == 3 && this.players[2].choice == Choice.ROCK) {
         this.winners.push(this.players[2].name);
+        this.transfer(this.players[2].name, this.players[2].txFee);
+        this.rewardStakers(this.players[2].name);
       }
     }
     if (
@@ -196,14 +208,31 @@ export class Game {
       this.players[0].choice == Choice.PAPER
     ) {
       this.winners.push(this.players[1].name);
+      this.transfer(this.players[1].name, this.players[1].txFee);
+      this.rewardStakers(this.players[1].name);
 
       if (this.numOfPlayers == 3 && this.players[2].choice == Choice.SCISSOR) {
         this.winners.push(this.players[2].name);
+        this.transfer(this.players[2].name, this.players[2].txFee);
+        this.rewardStakers(this.players[2].name);
       }
     }
   }
 
-  rewardStakers(): void {}
+  rewardStakers(_betOn: AccountId): void {
+    for(let i = 0; i < this.stakers.length; i++) {
+      if (this.stakers[i].betOn == _betOn) {
+        this.transfer(this.stakers[i].name, this.stakers[i].stake);
+      }
+    }
+  }
+
+  transfer(to: AccountId, invested: u128): void {
+    const reward = u128.add(invested, u128.mul(invested, u128.from(0.5)));
+
+    const transfer_win = ContractPromiseBatch.create(to);
+    transfer_win.transfer(reward);
+  }
 }
 
 @nearBindgen
@@ -211,15 +240,13 @@ export class Player {
   id: PlayerId;
   name: AccountId;
   choice: Choice;
+  txFee: u128;
 
-  constructor(_id: PlayerId, _name: AccountId, _choice: Choice) {
+  constructor(_id: PlayerId, _name: AccountId, _choice: Choice, _txFee: u128) {
     this.id = _id;
     this.name = _name;
     this.choice = _choice;
-  }
-
-  recordChoice(_choice: Choice) {
-    this.choice = _choice;
+    this.txFee = _txFee;
   }
 }
 
