@@ -18,6 +18,7 @@ import {
   Room,
   rooms,
   Staker,
+  Status,
   Visibility,
 } from "./model";
 
@@ -120,7 +121,7 @@ export function approveMember(
   }
 }
 
-export function createGame(_roomId: RoomId, _numOfPlayers: u32): void {
+export function createGame(_roomId: RoomId): void {
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, GFEE);
 
@@ -164,6 +165,22 @@ export function stake(_gameId: GameId, stakeOn: AccountId): void {
       game.addNewStaker(id, _gameId, stakeOn, SFEE);
 
       games.push(game);
+    }
+  }
+}
+
+export function payout(_gameId: GameId): void {
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      assert(Context.sender == games[x].createdBy, "Only the owner of this game can call this function");
+
+      const game = games.swap_remove(x) as Game;
+      if (game.status == Status.COMPLETED) {
+        game.rewardWinner(_gameId);
+        games.push(game);
+      } else {
+        assert(false, "This game is not yet completed!");
+      }
     }
   }
 }

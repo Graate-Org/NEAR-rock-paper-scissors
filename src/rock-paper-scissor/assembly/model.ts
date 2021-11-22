@@ -151,7 +151,7 @@ export class Game {
       this.status = Status.ACTIVE;
     } else if (newPlayers.length == this.numOfPlayers) {
       this.status = Status.COMPLETED;
-      this.rewardWinner(_gameId);
+      this.winner(_gameId);
     }
   }
 
@@ -169,7 +169,7 @@ export class Game {
     this.pool = u128.add(this.pool, txFee);
   }
 
-  rewardWinner(_gameId: GameId): void {
+  winner(_gameId: GameId): void {
     const players = this.players.get(_gameId) as Player[];
     const winners = this.winners.get(_gameId) as AccountId[];
 
@@ -181,10 +181,6 @@ export class Game {
 
     if (players[1].choice == Choice.ROCK && players[0].choice == Choice.PAPER) {
       winners.push(players[0].name);
-
-      this.transfer(players[0].name, players[0].txFee);
-      this.rewardStakers(_gameId, players[0].name);
-
       this.winners.set(_gameId, winners);
     }
     if (
@@ -192,9 +188,6 @@ export class Game {
       players[0].choice === Choice.SCISSOR
     ) {
       winners.push(players[1].name);
-      this.transfer(players[1].name, players[1].txFee);
-      this.rewardStakers(_gameId, players[1].name);
-
       this.winners.set(_gameId, winners);
     }
 
@@ -203,16 +196,10 @@ export class Game {
       players[0].choice == Choice.SCISSOR
     ) {
       winners.push(players[0].name);
-      this.transfer(players[0].name, players[0].txFee);
-      this.rewardStakers(_gameId, players[0].name);
-
       this.winners.set(_gameId, winners);
     }
     if (players[1].choice == Choice.PAPER && players[0].choice == Choice.ROCK) {
       winners.push(players[1].name);
-      this.transfer(players[1].name, players[1].txFee);
-      this.rewardStakers(_gameId, players[1].name);
-
       this.winners.set(_gameId, winners);
     }
     if (
@@ -220,9 +207,6 @@ export class Game {
       players[0].choice == Choice.ROCK
     ) {
       winners.push(players[0].name);
-      this.transfer(players[0].name, players[0].txFee);
-      this.rewardStakers(_gameId, players[0].name);
-
       this.winners.set(_gameId, winners);
     }
     if (
@@ -230,10 +214,20 @@ export class Game {
       players[0].choice == Choice.PAPER
     ) {
       winners.push(players[1].name);
-      this.transfer(players[1].name, players[1].txFee);
-      this.rewardStakers(_gameId, players[1].name);
-
       this.winners.set(_gameId, winners);
+    }
+  }
+
+  rewardWinner(_gameId: GameId): void {
+    const winners = this.winners.get(this.id) as AccountId[];
+    const players = this.players.get(this.id) as Player[];
+    for (let x = 0; x < players.length; x++) {
+      if (players[x].name == winners[0]) {
+        this.transfer(players[x].name, players[x].txFee);
+        this.rewardStakers(_gameId, players[x].name);
+
+        break;
+      }
     }
   }
 
