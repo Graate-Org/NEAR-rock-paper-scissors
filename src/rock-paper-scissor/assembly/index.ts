@@ -223,7 +223,7 @@ export function getRoomMembers(_roomId: RoomId): Member[] {
   return returnedMembers;
 }
 
-export function getRequests(_roomId: GameId): Request[] {
+export function getRoomRequests(_roomId: GameId): Request[] {
   const returnedRequests: Request[] = [];
 
   for (let x = 0; x < rooms.length; x++) {
@@ -232,11 +232,27 @@ export function getRequests(_roomId: GameId): Request[] {
 
       for (let i = 0; i < requests.length; i++) {
         if (requests[i].state != RequestStatus.ACCEPTED) {
-
+          returnedRequests.push(requests[i]);
         }
       }
+
+      break;
     }
   }
+
+  return returnedRequests;
+}
+
+export function getAllGames(_roomId: RoomId, gameStatus: Status): Game[] {
+  const returnedGames: Game[] = [];
+
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].status == gameStatus) {
+      returnedGames.push(games[x]);
+    }
+  }
+
+  return returnedGames;
 }
 
 
