@@ -1,1 +1,0 @@
-near call $CONTRACT randomNum --account_id $SIGNER 

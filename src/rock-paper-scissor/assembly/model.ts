@@ -11,7 +11,7 @@ import {
   GameId,
   PlayerId,
   RoomId,
-  StakeId,
+  StakerId,
   Timestamp,
 } from "../utils";
 
@@ -116,6 +116,15 @@ export class Game {
       this.status = Status.COMPLETED;
       this.rewardWinner(_gameId);
     }
+  }
+
+  addNewStaker(_gameId: GameId, _stakerId: StakerId, txFee: u128): void {
+    const staker = new Staker(_stakerId, Context.sender, txFee);
+    const stakers = this.stakers.get(_gameId) as Staker[];
+    stakers.push(staker);
+
+    this.stakers.set(_gameId, stakers);
+    this.pool = u128.add(this.pool, txFee);
   }
 
   rewardWinner(_gameId: GameId): void {
@@ -276,12 +285,12 @@ export class Player {
 
 @nearBindgen
 export class Staker {
-  id: StakeId;
+  id: StakerId;
   betOn: AccountId;
   name: AccountId;
   stake: u128;
 
-  constructor(_id: StakeId, _betOn: AccountId, _stake: u128) {
+  constructor(_id: StakerId, _betOn: AccountId, _stake: u128) {
     this.id = _id;
     this.betOn = _betOn;
     this.name = Context.sender;

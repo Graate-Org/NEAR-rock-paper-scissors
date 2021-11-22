@@ -111,9 +111,8 @@ export function stake(_gameId: GameId, stakeOn: AccountId): void {
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
       const game = games.swap_remove(x) as Game;
-      const stakers = game.stakers.get(game.id) as Staker[]
-      
-      stakers.push(staker);
+    
+      game.addNewStaker(_gameId, Context.sender, SFEE);
 
       games.push(game);
     }
