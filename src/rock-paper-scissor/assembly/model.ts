@@ -43,6 +43,7 @@ export class Room {
   owner: AccountId;
   isVisible: Visibility;
   members: PersistentMap<RoomId, Member[]>;
+  requests: PersistentMap<RoomId, Request[]>;
 
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
@@ -52,17 +53,37 @@ export class Room {
     this.members = new PersistentMap<RoomId, Member[]>("m");
     this.members.set(this.id, [] as Member[]);
     this.addNewMember(this.id, this.owner);
+
+    this.requests = new PersistentMap<RoomId, Request[]>("req");
+    this.requests.set(this.id, [] as Request[]);
   }
 
-  addNewMember(
-    _roomId: RoomId,
-    acctId: AccountId,
-  ): void {
+  addNewMember(_roomId: RoomId, acctId: AccountId): void {
     const member = new Member(_roomId, acctId);
     const members = this.members.get(_roomId) as Member[];
     members.push(member);
 
     this.members.set(_roomId, members);
+  }
+
+  addNewRequest(_roomId: RoomId): void {
+    const request = new Request(_roomId, Context.sender);
+    const requests = this.requests.get(_roomId) as Request[];
+    requests.push(request);
+
+    this.members.set(_roomId, requests);
+  }
+
+  updateRequests(_roomId: RoomId, acctId: AccountId): void {
+    const requests = this.requests.get(_roomId) as Request[];
+
+    for (let x = 0; x < requests.length; x++) {
+      if (requests[x].accountId == acctId) {
+        const request = requests[x];
+        request.state = RequestStatus.ACCEPTED;
+        this.requests.set(_roomId, requests);
+      }
+    }
   }
 }
 
@@ -298,5 +319,4 @@ export const rooms = new PersistentVector<Room>("r");
 export const players = new PersistentVector<Player>("p");
 export const stakers = new PersistentVector<Staker>("s");
 export const games = new PersistentVector<Game>("g");
-export const members = new PersistentVector<Member>("m");
 export const requests = new PersistentVector<Request>("req");
