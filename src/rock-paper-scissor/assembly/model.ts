@@ -71,7 +71,7 @@ export class Room {
     const requests = this.requests.get(_roomId) as Request[];
     requests.push(request);
 
-    this.members.set(_roomId, requests);
+    this.requests.set(_roomId, requests);
   }
 
   updateRequests(_roomId: RoomId, acctId: AccountId): void {
@@ -316,7 +316,4 @@ export enum RequestStatus {
 }
 
 export const rooms = new PersistentVector<Room>("r");
-export const players = new PersistentVector<Player>("p");
-export const stakers = new PersistentVector<Staker>("s");
 export const games = new PersistentVector<Game>("g");
-export const requests = new PersistentVector<Request>("req");

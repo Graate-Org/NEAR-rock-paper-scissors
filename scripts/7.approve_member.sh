@@ -1,1 +1,1 @@
-near call $CONTRACT approveMember --account_id $OWNER '{"_roomId": "RM-1637470256446411938", "acct": "akinyemi.testnet"}'
+near call $CONTRACT approveMember --account_id $OWNER '{"_roomId": "RM-1637594330664526579", "acct": "akinyemi.testnet", "_isVisible": false}'

@@ -15,8 +15,6 @@ import {
   Member,
   Player,
   Request,
-  requests,
-  RequestStatus,
   Room,
   rooms,
   Staker,
@@ -106,7 +104,7 @@ export function approveMember(
         const members = room.members.get(room.id) as Member[];
 
         for (let i = 0; i < members.length; i++) {
-          if (members[i].accountId == Context.sender) {
+          if (members[i].accountId == acct) {
             assert(false, "You're already a member of this room");
             break;
           }
