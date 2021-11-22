@@ -1,4 +1,4 @@
-import {u128, Context, PersistentVector,RNG, math } from "near-sdk-as";
+import {u128, Context } from "near-sdk-as";
 import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId, SFEE } from "../utils";
 import { Game, games, Member, members, Player, Request, requests, RequestStatus, Room, rooms, Staker, Visibility } from "./model";
 
@@ -17,14 +17,22 @@ export function createRoom(_isVisible: boolean): void {
 
 export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
   if (_isVisible) {
-    for (let i = 0; i < members.length; i++) {
-      if(members[i].roomId == _roomId && members[i].accountId == Context.sender) {
-        assert(false, "You're already a member of this room");
+    for (let x = 0; x < rooms.length; x++) {
+      if (rooms[x].id == _roomId) {
+        const room = rooms.swap_remove(x) as Room;
+        const members = room.members.get(room.id) as Member[];
+  
+        for (let i = 0; i < members.length; i++) {
+          if(members[i].accountId == Context.sender) {
+            assert(false, "You're already a member of this room");
+          }
+        }
+  
+        room.addNewMember(room.id, Context.sender);
+  
+        rooms.push(room);
       }
     }
-
-    const member = new Member(_roomId, Context.sender);
-    members.push(member);
   }
 }
 
@@ -76,7 +84,7 @@ export function createGame(_roomId: RoomId, _numOfPlayers: u32): void {
   verifyTxFee(txDeposit, GFEE);
 
   const id = generateId("GM-");
-  const game = new Game(_roomId, id, _numOfPlayers);
+  const game = new Game(_roomId, id);
 
   games.push(game); 
 }
@@ -112,7 +120,7 @@ export function stake(_gameId: GameId, stakeOn: AccountId): void {
     if (games[x].id == _gameId) {
       const game = games.swap_remove(x) as Game;
     
-      game.addNewStaker(_gameId, Context.sender, SFEE);
+      game.addNewStaker(id,_gameId, stakeOn, SFEE);
 
       games.push(game);
     }

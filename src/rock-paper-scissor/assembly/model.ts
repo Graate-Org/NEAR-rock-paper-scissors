@@ -42,11 +42,27 @@ export class Room {
   id: RoomId;
   owner: AccountId;
   isVisible: Visibility;
+  members: PersistentMap<RoomId, Member[]>;
 
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
     this.owner = _owner;
     this.isVisible = _isVisible;
+
+    this.members = new PersistentMap<RoomId, Member[]>("m");
+    this.members.set(this.id, [] as Member[]);
+    this.addNewMember(this.id, this.owner);
+  }
+
+  addNewMember(
+    _roomId: RoomId,
+    acctId: AccountId,
+  ): void {
+    const member = new Member(_roomId, acctId);
+    const members = this.members.get(_roomId) as Member[];
+    members.push(member);
+
+    this.members.set(_roomId, members);
   }
 }
 
@@ -62,9 +78,9 @@ export class Game {
   winners: PersistentMap<GameId, AccountId[]>;
   pool: u128;
 
-  constructor(public roomId: RoomId, _id: GameId, _numOfPlayers: u32) {
+  constructor(public roomId: RoomId, _id: GameId) {
     this.id = _id;
-    this.numOfPlayers = _numOfPlayers;
+    this.numOfPlayers = 2;
 
     this.players = new PersistentMap<GameId, Player[]>("plys");
     this.players.set(this.id, [] as Player[]);
@@ -94,7 +110,7 @@ export class Game {
     }
     const randNum = randomNum();
 
-    let choice = Choice.ROCK
+    let choice = Choice.ROCK;
 
     if (randNum == 1) {
       choice = Choice.PAPER;
@@ -118,8 +134,13 @@ export class Game {
     }
   }
 
-  addNewStaker(_gameId: GameId, _stakerId: StakerId, txFee: u128): void {
-    const staker = new Staker(_stakerId, Context.sender, txFee);
+  addNewStaker(
+    _stakerId: StakerId,
+    _gameId: GameId,
+    stakeOn: AccountId,
+    txFee: u128
+  ): void {
+    const staker = new Staker(_stakerId, stakeOn, txFee);
     const stakers = this.stakers.get(_gameId) as Staker[];
     stakers.push(staker);
 
@@ -131,41 +152,17 @@ export class Game {
     const players = this.players.get(_gameId) as Player[];
     const winners = this.winners.get(_gameId) as AccountId[];
 
-    if (this.numOfPlayers == 3) {
-      if (
-        (players[0].choice == players[1].choice &&
-          players[1].choice == players[2].choice &&
-          players[2].choice == players[0].choice) ||
-        (players[0].choice != players[1].choice &&
-          players[1].choice != players[2].choice &&
-          players[2].choice != players[0].choice)
-      ) {
-       winners.push("draw");
-       this.winners.set(_gameId, winners);
-       return;
-      }
-    } else if (this.numOfPlayers == 2) {
-      if (players[0].choice == players[1].choice) {
-        winners.push("draw");
-        this.winners.set(_gameId, winners);
-        return;
-      }
+    if (players[0].choice == players[1].choice) {
+      winners.push("draw");
+      this.winners.set(_gameId, winners);
+      return;
     }
 
-    if (
-      players[1].choice == Choice.ROCK &&
-      players[0].choice == Choice.PAPER
-    ) {
+    if (players[1].choice == Choice.ROCK && players[0].choice == Choice.PAPER) {
       winners.push(players[0].name);
 
       this.transfer(players[0].name, players[0].txFee);
       this.rewardStakers(_gameId, players[0].name);
-
-      if (this.numOfPlayers == 3 && players[2].choice == Choice.PAPER) {
-        winners.push(players[2].name);
-        this.transfer(players[2].name, players[2].txFee);
-        this.rewardStakers(_gameId, players[2].name);
-      }
 
       this.winners.set(_gameId, winners);
     }
@@ -177,43 +174,23 @@ export class Game {
       this.transfer(players[1].name, players[1].txFee);
       this.rewardStakers(_gameId, players[1].name);
 
-      if (this.numOfPlayers == 3 && players[2].choice == Choice.ROCK) {
-        winners.push(players[2].name);
-        this.transfer(players[2].name, players[2].txFee);
-        this.rewardStakers(_gameId, players[2].name);
-      }
-
       this.winners.set(_gameId, winners);
     }
-  
-     if( players[1].choice == Choice.PAPER &&
+
+    if (
+      players[1].choice == Choice.PAPER &&
       players[0].choice == Choice.SCISSOR
     ) {
-      winners.push(players[0].name)
+      winners.push(players[0].name);
       this.transfer(players[0].name, players[0].txFee);
       this.rewardStakers(_gameId, players[0].name);
 
-      if (this.numOfPlayers == 3 && players[2].choice == Choice.SCISSOR) {
-        winners.push(players[2].name);
-        this.transfer(players[2].name, players[2].txFee);
-        this.rewardStakers(_gameId, players[2].name);
-      }
-
       this.winners.set(_gameId, winners);
     }
-    if (
-      players[1].choice == Choice.PAPER &&
-      players[0].choice == Choice.ROCK
-    ) {
+    if (players[1].choice == Choice.PAPER && players[0].choice == Choice.ROCK) {
       winners.push(players[1].name);
       this.transfer(players[1].name, players[1].txFee);
       this.rewardStakers(_gameId, players[1].name);
-
-      if (this.numOfPlayers == 3 && players[2].choice == Choice.PAPER) {
-        winners.push(players[2].name);
-        this.transfer(players[2].name, players[2].txFee);
-        this.rewardStakers(_gameId, players[2].name);
-      }
 
       this.winners.set(_gameId, winners);
     }
@@ -225,11 +202,6 @@ export class Game {
       this.transfer(players[0].name, players[0].txFee);
       this.rewardStakers(_gameId, players[0].name);
 
-      if (this.numOfPlayers == 3 && players[2].choice == Choice.ROCK) {winners.push(players[2].name);
-        this.transfer(players[2].name, players[2].txFee);
-        this.rewardStakers(_gameId, players[2].name);
-      }
-
       this.winners.set(_gameId, winners);
     }
     if (
@@ -240,12 +212,6 @@ export class Game {
       this.transfer(players[1].name, players[1].txFee);
       this.rewardStakers(_gameId, players[1].name);
 
-      if (this.numOfPlayers == 3 && players[2].choice == Choice.SCISSOR) {
-        winners.push(players[2].name);
-        this.transfer(players[2].name, players[2].txFee);
-        this.rewardStakers(_gameId, players[2].name);
-      }
-
       this.winners.set(_gameId, winners);
     }
   }
@@ -253,7 +219,7 @@ export class Game {
   rewardStakers(_gameId: GameId, _betOn: AccountId): void {
     const stakers = this.stakers.get(_gameId) as Staker[];
 
-    for(let i = 0; i < stakers.length; i++) {
+    for (let i = 0; i < stakers.length; i++) {
       if (stakers[i].betOn == _betOn) {
         this.transfer(stakers[i].name, stakers[i].stake);
       }
@@ -325,7 +291,7 @@ export class Request {
 export enum RequestStatus {
   CREATED,
   ACCEPTED,
-  REJECTED
+  REJECTED,
 }
 
 export const rooms = new PersistentVector<Room>("r");
@@ -334,4 +300,3 @@ export const stakers = new PersistentVector<Staker>("s");
 export const games = new PersistentVector<Game>("g");
 export const members = new PersistentVector<Member>("m");
 export const requests = new PersistentVector<Request>("req");
-
