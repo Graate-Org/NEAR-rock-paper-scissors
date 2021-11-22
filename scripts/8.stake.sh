@@ -1,1 +1,1 @@
-near call $CONTRACT stake --account_id $SIGNER '{"_gameId": "GM-1637540445061594129", "stakeOn": "akinyemi.testnet"}' --amount 1
+near call $CONTRACT stake --account_id $MEMBER '{"_gameId": "GM-1637604479178430977", "stakeOn": "chukwuka.testnet"}' --amount 1

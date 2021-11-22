@@ -1,1 +1,1 @@
-near call $CONTRACT joinPublicRoom --account_id $MEMBER '{"_roomId": "RM-1637590594756806427", "_isVisible": true}'
+near call $CONTRACT joinPublicRoom --account_id $MEMBER '{"_roomId": "RM-1637604297448107092", "_isVisible": true}'

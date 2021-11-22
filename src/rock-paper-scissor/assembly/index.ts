@@ -1,4 +1,4 @@
-import { u128, Context } from "near-sdk-as";
+import { u128, Context, PersistentMap } from "near-sdk-as";
 import {
   AccountId,
   GameId,
@@ -15,6 +15,7 @@ import {
   Member,
   Player,
   Request,
+  RequestStatus,
   Room,
   rooms,
   Staker,
@@ -184,6 +185,60 @@ export function payout(_gameId: GameId): void {
     }
   }
 }
+
+export function getRooms(isJoined: boolean): Room[] {
+  const returnedRooms: Room[] = [];
+
+  for (let x = 0; x < rooms.length; x++) {
+    const members = rooms[x].members.get(rooms[x].id) as Member[];
+
+    for (let i = 0; i < members.length; i++) {
+      if(isJoined) {
+        if (members[i].accountId == Context.sender) {
+          returnedRooms.push(rooms[x]);
+        }
+      } else if (!isJoined) {
+        if (members[i].accountId != Context.sender) {
+          returnedRooms.push(rooms[x]);
+        }
+      }
+    }
+  }
+
+  return returnedRooms;
+}
+
+export function getRoomMembers(_roomId: RoomId): Member[] {
+  let returnedMembers: Member[] = [];
+
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id == _roomId) {
+      const members = rooms[x].members.get(rooms[x].id) as Member[];
+      returnedMembers = members;
+
+      break;
+    }
+  }
+
+  return returnedMembers;
+}
+
+export function getRequests(_roomId: GameId): Request[] {
+  const returnedRequests: Request[] = [];
+
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id == _roomId) {
+      const requests = rooms[x].requests.get(rooms[x].id) as Request[];
+
+      for (let i = 0; i < requests.length; i++) {
+        if (requests[i].state != RequestStatus.ACCEPTED) {
+
+        }
+      }
+    }
+  }
+}
+
 
 function verifyTxFee(deposit: u128, Fee: u128): void {
   assert(
