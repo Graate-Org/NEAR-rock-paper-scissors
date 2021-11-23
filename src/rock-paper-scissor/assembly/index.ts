@@ -255,6 +255,47 @@ export function getAllGames(_roomId: RoomId, gameStatus: Status): Game[] {
   return returnedGames;
 }
 
+export function getGamePlayers(_gameId: GameId): Player[] {
+  let returnedPlayers: Player[] = [];
+
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      const players = games[x].players.get(games[x].id) as Player[];
+
+      returnedPlayers = players;
+    }
+  }
+
+  return returnedPlayers;
+}
+
+export function getGameStakers(_gameId: GameId): Staker[] {
+  let returnedStakers: Staker[] = [];
+
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      const players = games[x].stakers.get(games[x].id) as Staker[];
+
+      returnedStakers = players;
+    }
+  }
+
+  return returnedStakers;
+}
+
+export function getWinner(_gameId: GameId): AccountId {
+  let returnedWinner: AccountId[] = [];
+
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      const winners = games[x].winners.get(games[x].id) as AccountId[];
+
+      returnedWinner = winners;
+    }
+  }
+
+  return returnedWinner[0];
+}
 
 function verifyTxFee(deposit: u128, Fee: u128): void {
   assert(
