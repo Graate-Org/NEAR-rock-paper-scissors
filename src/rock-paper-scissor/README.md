@@ -161,4 +161,4 @@ function generateId
 ```
 - Non-exported function (ie. a function that can be acessed outside the contract)
 - Recieves a `'{prefix: string}'` as parameter
-- Generates and returns a unique ID that a particular deposit was made to the smart contract.
+- Generates and returns a unique ID
