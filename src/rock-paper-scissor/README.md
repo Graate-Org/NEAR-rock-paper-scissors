@@ -119,9 +119,46 @@ function getWinner
 - Recieves a `'{"_gameId": GameId}'` as parameter
 - Returns an array of winners for a game.
 
+### Helper Functions
+
 ```ts
-function getGameStakers
+function verifyMembership
 ```
-- "View" function (ie. a function that does not alters contract state)
-- Recieves a `'{"_gameId": GameId}'` as parameter
-- Returns the winner of a game.
+- Non-exported function (ie. a function that can be acessed outside the contract)
+- Recieves a `'{_roomId: RoomId, acct: AccountId}'` as parameter
+- Verifies that an AccountId is a member of a room.
+
+```ts
+function verifyRequest
+```
+- Non-exported function (ie. a function that can be acessed outside the contract)
+- Recieves a `'{_roomId: RoomId, acct: AccountId}'` as parameter
+- Verifies that a request tied to an AccountId exists within a room's requests.
+
+```ts
+function verifyRoom
+```
+- Non-exported function (ie. a function that can be acessed outside the contract)
+- Recieves a `'{_roomId: RoomId}'` as parameter
+- Verifies that a room exists within the rooms array.
+
+```ts
+function verifyGame
+```
+- Non-exported function (ie. a function that can be acessed outside the contract)
+- Recieves a `'{_gameId: GameId}'` as parameter
+- Verifies that a game exist within the games array.
+
+```ts
+function verifyTxFee
+```
+- Non-exported function (ie. a function that can be acessed outside the contract)
+- Recieves a `'{deposit: u128, Fee: u128}'` as parameter
+- Verifies that a particular deposit was made to the smart contract.
+
+```ts
+function generateId
+```
+- Non-exported function (ie. a function that can be acessed outside the contract)
+- Recieves a `'{prefix: string}'` as parameter
+- Generates and returns a unique ID that a particular deposit was made to the smart contract.
