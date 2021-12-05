@@ -113,11 +113,11 @@ function getGameStakers
 - Returns an array of stakers participating in a game.
 
 ```ts
-function getGameStakers
+function getWinner
 ```
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a `'{"_gameId": GameId}'` as parameter
-- Returns the winner of a game.
+- Returns an array of winners for a game.
 
 ```ts
 function getGameStakers

@@ -141,6 +141,12 @@ export class Game {
 
     const player = new Player(_playerId, Context.sender, choice, txFee);
     const players = this.players.get(_gameId) as Player[];
+
+    if (players.length === 1 && players[0].name === Context.sender) {
+      assert(false, "Player 1 can't be player 2")
+    }
+
+    assert(players.length !== 2, "This game is already filled");
     players.push(player);
 
     this.players.set(_gameId, players);

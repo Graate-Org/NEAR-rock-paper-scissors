@@ -1,4 +1,4 @@
-import { u128, Context, PersistentMap } from "near-sdk-as";
+import { u128, Context, PersistentVector } from "near-sdk-as";
 import {
   AccountId,
   GameId,
@@ -88,6 +88,8 @@ export function approveMember(
   acct: AccountId,
   _isVisible: boolean
 ): void {
+  verifyRequest(_roomId, acct);
+
   for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
       assert(
@@ -123,6 +125,7 @@ export function approveMember(
 }
 
 export function createGame(_roomId: RoomId): void {
+  verifyMembership(_roomId, Context.sender);
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, GFEE);
 
@@ -140,6 +143,7 @@ export function play(_gameId: GameId): void {
 
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
+      verifyMembership(games[x].roomId, Context.sender);
       const game = games.swap_remove(x) as Game;
       const players = game.players.get(game.id) as Player[];
       assert(
@@ -295,6 +299,40 @@ export function getWinner(_gameId: GameId): AccountId {
   }
 
   return returnedWinner[0];
+}
+
+function verifyMembership(_roomId: RoomId, acct: AccountId): void {
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id === _roomId) {
+      const members = rooms[x].members.get(_roomId) as Member[];
+
+      for (let y = 0; y < members.length; y++) {
+        if (members[y].accountId === acct) {
+          return;
+        }
+      }
+
+      break
+    }
+  }
+
+  assert(false, "You're not a member of this room")
+}
+
+function verifyRequest(_roomId: RoomId, acct: AccountId): void {
+  for (let x = 0; x < rooms.length; x++) {
+    if(rooms[x].id === _roomId) {
+      const requests = rooms[x].requests.get(_roomId) as Request[];
+      for (let y = 0; y < requests.length; y++) {
+        if (requests[y].accountId === acct) {
+          return;
+        }
+      }
+      break
+    }
+  }
+
+  assert(false, "No such request from this user")
 }
 
 function verifyTxFee(deposit: u128, Fee: u128): void {
