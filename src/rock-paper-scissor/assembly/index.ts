@@ -38,6 +38,8 @@ export function createRoom(_isVisible: boolean): void {
 }
 
 export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
+  verifyRoom(_roomId);
+
   if (_isVisible) {
     for (let x = 0; x < rooms.length; x++) {
       if (rooms[x].id == _roomId) {
@@ -60,6 +62,8 @@ export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
 }
 
 export function requestToJoinPrivateRoom(_roomId: RoomId): void {
+  verifyRoom(_roomId);
+
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, JoinFEE);
 
@@ -88,6 +92,7 @@ export function approveMember(
   acct: AccountId,
   _isVisible: boolean
 ): void {
+  verifyRoom(_roomId);
   verifyRequest(_roomId, acct);
 
   for (let x = 0; x < rooms.length; x++) {
@@ -125,6 +130,7 @@ export function approveMember(
 }
 
 export function createGame(_roomId: RoomId): void {
+  verifyRoom(_roomId);
   verifyMembership(_roomId, Context.sender);
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, GFEE);
@@ -136,6 +142,8 @@ export function createGame(_roomId: RoomId): void {
 }
 
 export function play(_gameId: GameId): void {
+  verifyGame(_gameId);
+  
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, PFEE);
 
@@ -158,6 +166,8 @@ export function play(_gameId: GameId): void {
 }
 
 export function stake(_gameId: GameId, stakeOn: AccountId): void {
+  verifyGame(_gameId);
+
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, SFEE);
 
@@ -333,6 +343,26 @@ function verifyRequest(_roomId: RoomId, acct: AccountId): void {
   }
 
   assert(false, "No such request from this user")
+}
+
+function verifyRoom(_roomId: RoomId): void {
+  for(let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id === _roomId) {
+      return;
+    }
+  }
+
+  assert(false, "This room doesn't exist yet");
+}
+
+function verifyGame(_gameId: GameId): void {
+  for(let x = 0; x < games.length; x++) {
+    if (games[x].id === _gameId) {
+      return;
+    }
+  }
+
+  assert(false, "This game doesn't exist yet");
 }
 
 function verifyTxFee(deposit: u128, Fee: u128): void {
