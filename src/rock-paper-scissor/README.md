@@ -92,11 +92,25 @@ function getRoomRequests
 - Returns an array of requests within a private room.
 
 ```ts
-function getAllGames
+function getRoomGames
 ```
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a `'{"_roomId": RoomId, "gameStatus": Status}'` as parameter
-- Returns an array of games with the same status; either created or active or completed games.
+- Returns an array of games within the room; either created or active or completed games.
+
+```ts
+function getRoom
+```
+- "View" function (ie. a function that does not alters contract state)
+- Recieves a `'{_roomId: RoomId}'` as parameter
+- Returns a room with its details.
+
+```ts
+function getProfile
+```
+- "View" function (ie. a function that does not alters contract state)
+- Recieves a `'{acct: AccountId}'` as parameter
+- Returns a all the games that a player (AccountId) has participated in.
 
 ```ts
 function getGamePlayers

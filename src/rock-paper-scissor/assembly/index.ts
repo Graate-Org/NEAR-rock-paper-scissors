@@ -257,16 +257,37 @@ export function getRoomRequests(_roomId: GameId): Request[] {
   return returnedRequests;
 }
 
-export function getAllGames(_roomId: RoomId, gameStatus: Status): Game[] {
-  const returnedGames: Game[] = [];
+export function getRoomGames(_roomId: RoomId): Game[] {
+  const roomGames: Game[] = [];
 
   for (let x = 0; x < games.length; x++) {
-    if (games[x].status == gameStatus) {
-      returnedGames.push(games[x]);
+    if (games[x].roomId === _roomId) {
+      roomGames.push(games[x]);
     }
   }
 
-  return returnedGames;
+  return roomGames;
+}
+
+export function getRoom(_roomId: RoomId): Room {
+  let room: Room = rooms[0];
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id === _roomId) {
+      room = rooms[x];
+    }
+  }
+  return room;
+}
+
+export function getProfile(acct: AccountId): Game[] {
+  const profile: Game[] = [];
+  for (let x = 0; x < games.length; x++) {
+    let players = games[x].players.get(games[x].id) as Player[];
+    if (players[0].name === acct || players[1].name === acct) {
+      profile.push(games[x]);
+    }
+  }
+  return profile;
 }
 
 export function getGamePlayers(_gameId: GameId): Player[] {
