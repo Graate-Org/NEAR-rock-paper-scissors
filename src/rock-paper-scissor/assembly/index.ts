@@ -23,7 +23,7 @@ import {
   Visibility,
 } from "./model";
 
-export function createRoom(_isVisible: boolean): void {
+export function createRoom(_isVisible: boolean): string {
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, RFEE);
 
@@ -35,6 +35,8 @@ export function createRoom(_isVisible: boolean): void {
   );
 
   rooms.push(room);
+  
+  return id;
 }
 
 export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
