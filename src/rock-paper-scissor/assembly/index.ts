@@ -200,7 +200,7 @@ export function payout(_gameId: GameId): void {
   }
 }
 
-export function getRooms(isJoined: boolean): Room[] {
+export function getRooms(isJoined: boolean, acct: AccountId): Room[] {
   const returnedRooms: Room[] = [];
 
   for (let x = 0; x < rooms.length; x++) {
@@ -208,11 +208,11 @@ export function getRooms(isJoined: boolean): Room[] {
 
     for (let i = 0; i < members.length; i++) {
       if(isJoined) {
-        if (members[i].accountId == Context.sender) {
+        if (members[i].accountId == acct) {
           returnedRooms.push(rooms[x]);
         }
       } else if (!isJoined) {
-        if (members[i].accountId != Context.sender) {
+        if (members[i].accountId != acct) {
           returnedRooms.push(rooms[x]);
         }
       }

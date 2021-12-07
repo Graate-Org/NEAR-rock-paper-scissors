@@ -5,6 +5,7 @@ import {
   createGame,
   createRoom,
   joinPublicRoom,
+  play,
   requestToJoinPrivateRoom,
 } from "../assembly";
 import {
@@ -13,9 +14,10 @@ import {
   Request,
   RequestStatus,
   rooms,
+  Status,
   Visibility,
 } from "../assembly/model";
-import { AccountId, GFEE, JoinFEE, RFEE } from "../utils";
+import { AccountId, GFEE, JoinFEE, PFEE, RFEE } from "../utils";
 
 const OWNER: AccountId = "akinyemi.testnet";
 const MEMBER: AccountId = "chukwuka.testnet";
@@ -137,4 +139,10 @@ describe("Playing a created game within a room", () => {
     createGame(rooms[0].id);
   });
 
+  it("member get added as a player and plays", () => {
+    VMContext.setAttached_deposit(PFEE);
+    play(games[0].id);
+    expect(games[0].status).toBe(Status.ACTIVE, "A player has been added to the game, as well as the player has played and the game is active");
+  })
+  
 })
