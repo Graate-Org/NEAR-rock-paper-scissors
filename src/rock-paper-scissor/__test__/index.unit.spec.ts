@@ -22,6 +22,7 @@ import { AccountId, GFEE, JoinFEE, PFEE, RFEE } from "../utils";
 const OWNER: AccountId = "akinyemi.testnet";
 const MEMBER: AccountId = "chukwuka.testnet";
 const PLAYER: AccountId = "ikeh_akinyemi.testnet";
+const STAKER: AccountId = "ikeh_akinyemi.testnet";
 
 describe("Creating a room", () => {
   beforeEach(() => {
@@ -130,7 +131,7 @@ describe("Creating a game within a room", () => {
 describe("Playing a created game within a room", () => {
   beforeEach(() => {
     VMContext.setSigner_account_id(OWNER);
-    VMContext.setAttached_deposit(GFEE);
+    VMContext.setAttached_deposit(RFEE);
     createRoom(true);
 
     VMContext.setSigner_account_id(MEMBER);
@@ -139,10 +140,44 @@ describe("Playing a created game within a room", () => {
     createGame(rooms[0].id);
   });
 
-  it("member get added as a player and plays", () => {
+  it("member gets added as a player and plays", () => {
     VMContext.setAttached_deposit(PFEE);
     play(games[0].id);
     expect(games[0].status).toBe(Status.ACTIVE, "A player has been added to the game, as well as the player has played and the game is active");
+
+    VMContext.setSigner_account_id(PLAYER);
+    joinPublicRoom(rooms[0].id, true);
+    VMContext.setAttached_deposit(PFEE);
+    play(games[0].id);
+    expect(games[0].status).toBe(Status.COMPLETED, "This game is completed as the last player for the game has played");
   })
-  
+
+
+  it("throws error with zero deposit", () => {
+    VMContext.setAttached_deposit(u128.Zero);
+    function zeroDeposit(): void {
+      play(games[0].id)
+    }
+    expect(zeroDeposit).toThrow("Can't play a game with zero deposit")
+  })
+
+});
+
+describe("Staking on players within a game", () => {
+  beforeEach(() => {
+    VMContext.setAttached_deposit(RFEE);
+    VMContext.setSigner_account_id(OWNER);
+    createRoom(true);
+
+    VMContext.setSigner_account_id(MEMBER);
+    joinPublicRoom(rooms[0].id, true);
+    VMContext.setAttached_deposit(GFEE);
+    createGame(rooms[0].id);
+    VMContext.setAttached_deposit(PFEE);
+    play(games[0].id)
+  });
+
+  it("stake on a player", () => {
+
+  })
 })
