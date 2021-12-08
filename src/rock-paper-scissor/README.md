@@ -12,7 +12,6 @@ function createRoom
 - "Change" function (ie. a function that alters contract state)
 - Recieve a boolean value (false for private room, true for public room)
 - Creates a new room and update the rooms data structure with the created room.
-- Returns the id of the room created.
 
 ```ts
 function joinPublicRoom
