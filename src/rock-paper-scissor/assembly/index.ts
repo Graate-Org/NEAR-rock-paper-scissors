@@ -8,6 +8,7 @@ import {
   RFEE,
   RoomId,
   SFEE,
+  Timestamp,
 } from "../utils";
 import {
   Game,
@@ -23,7 +24,7 @@ import {
   Visibility,
 } from "./model";
 
-export function createRoom(_isVisible: boolean): string {
+export function createRoom(_isVisible: boolean): Timestamp {
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, RFEE);
 
@@ -35,8 +36,8 @@ export function createRoom(_isVisible: boolean): string {
   );
 
   rooms.push(room);
-  
-  return id;
+
+  return rooms[rooms.length - 1].createdAt;
 }
 
 export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {

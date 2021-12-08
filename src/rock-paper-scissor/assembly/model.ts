@@ -44,6 +44,7 @@ export class Room {
   isVisible: Visibility;
   members: PersistentMap<RoomId, Member[]>;
   requests: PersistentMap<RoomId, Request[]>;
+  createdAt: Timestamp;
 
   constructor(_id: RoomId, _owner: AccountId, _isVisible: Visibility) {
     this.id = _id;
@@ -56,6 +57,7 @@ export class Room {
 
     this.requests = new PersistentMap<RoomId, Request[]>("req");
     this.requests.set(this.id, [] as Request[]);
+    this.createdAt = Context.blockTimestamp;
   }
 
   addNewMember(_roomId: RoomId, acctId: AccountId): void {
