@@ -1,7 +1,7 @@
 ## Rock-Paper-Scissor Game
 This repository includes a complete Smart Contract for a rock-paper-scissor game built on the NEAR blockchain. This smart contract has flaws that would fixed in the second version or in a branch within the repo.
 
-The flaws within the smart contract are:
+The flaws fixed within this smart contract are:
 - A player can play twice within a game. 
   - solution: restrict the first player from also being the second player through assertion.
 - Anyone can create a game or play a game even if not a member of the room.
