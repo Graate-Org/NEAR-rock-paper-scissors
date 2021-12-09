@@ -20,6 +20,7 @@ function joinPublicRoom
 - Recieves a `'{"_roomId": RoomId, "_isVisible": boolean}'` parameters
 - Allows the account initiating the contract call to join the room that's public
 - This invokes a `addNewMember` method on the `Room` data type.
+- Returns a success message.
 
 ```ts
 function requestToJoinPrivateRoom
@@ -35,6 +36,7 @@ function approveMember
 - "Change" function (ie. a function that alters contract state)
 - Recieves a `'{"_roomId": RoomId, "acct": AccountId, "_isVisible": boolean}'` as parameter
 - This invokes the `addNewMember` and the `updateRequests` methods on the `Room` data type.
+- Returns a success message.
 
 ```ts
 function createGame

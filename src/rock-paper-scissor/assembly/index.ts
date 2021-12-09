@@ -38,7 +38,7 @@ export function createRoom(_isVisible: boolean): void {
   rooms.push(room);
 }
 
-export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
+export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): string {
   verifyRoom(_roomId);
 
   if (_isVisible) {
@@ -60,6 +60,7 @@ export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): void {
       }
     }
   }
+  return "Successfully joined room";
 }
 
 export function requestToJoinPrivateRoom(_roomId: RoomId): void {
@@ -92,7 +93,7 @@ export function approveMember(
   _roomId: RoomId,
   acct: AccountId,
   _isVisible: boolean
-): void {
+): string {
   verifyRoom(_roomId);
   verifyRequest(_roomId, acct);
 
@@ -128,6 +129,8 @@ export function approveMember(
       }
     }
   }
+
+  return "Successfully joined room";
 }
 
 export function createGame(_roomId: RoomId): void {
@@ -185,7 +188,9 @@ export function stake(_gameId: GameId, stakeOn: AccountId): void {
   }
 }
 
-export function payout(_gameId: GameId): void {
+export function payout(_gameId: GameId): bool {
+  let isPaid: bool = false;
+
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
       assert(Context.sender == games[x].createdBy, "Only the owner of this game can call this function");
@@ -194,11 +199,16 @@ export function payout(_gameId: GameId): void {
       if (game.status == Status.COMPLETED) {
         game.rewardWinner(_gameId);
         games.push(game);
+        isPaid = true;
+        return isPaid;
       } else {
         assert(false, "This game is not yet completed!");
       }
+      break;
     }
   }
+
+  return isPaid;
 }
 
 export function getRooms(isJoined: boolean, acct: AccountId): Room[] {
@@ -344,11 +354,11 @@ function verifyMembership(_roomId: RoomId, acct: AccountId): void {
         }
       }
 
-      break
+      break;
     }
   }
 
-  assert(false, "You're not a member of this room")
+  // assert(false, "You're not a member of this room");
 }
 
 function verifyRequest(_roomId: RoomId, acct: AccountId): void {
