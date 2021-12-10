@@ -30,6 +30,7 @@ function requestToJoinPrivateRoom
 - Recieves a `'{"_roomId": RoomId}'` as parameter
 - Allows the account initiating the contract call to request to join a private room
 - This invokes a `addNewRequest` method on the `Room` data type.
+- Returns a success message.
 
 ```ts
 function approveMember
@@ -63,8 +64,9 @@ function play
 function stake
 ```
 - "Change" function (ie. a function that alters contract state)
-- Recieves a `'{"_gameId": GameId}'` as parameter
+- Recieves a `'{_gameId: GameId, stakeOn: AccountId}'` as parameter
 - This invokes the `addNewStaker` method on the `Game` data type.
+- Returns a success message.
 
 ```ts
 function payout
@@ -72,6 +74,7 @@ function payout
 - "Change" function (ie. a function that alters contract state)
 - Recieves a `'{"_gameId": GameId}'` as parameter
 - Smart contract panics if game is still active.
+- Returns boolean
 
 #### Game Reporting Functions
 

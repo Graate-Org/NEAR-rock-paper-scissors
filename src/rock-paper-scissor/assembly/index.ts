@@ -166,7 +166,7 @@ export function play(_gameId: GameId): string {
   return "Your outcome has been registered";
 }
 
-export function stake(_gameId: GameId, stakeOn: AccountId): void {
+export function stake(_gameId: GameId, stakeOn: AccountId): string {
   verifyGame(_gameId);
 
   const txDeposit = Context.attachedDeposit;
@@ -183,6 +183,8 @@ export function stake(_gameId: GameId, stakeOn: AccountId): void {
       games.push(game);
     }
   }
+
+  return "You have staked on this player: " + stakeOn;
 }
 
 export function payout(_gameId: GameId): bool {
