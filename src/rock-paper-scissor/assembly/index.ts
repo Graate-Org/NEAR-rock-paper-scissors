@@ -8,7 +8,6 @@ import {
   RFEE,
   RoomId,
   SFEE,
-  Timestamp,
 } from "../utils";
 import {
   Game,
@@ -294,6 +293,18 @@ export function getProfile(acct: AccountId): Game[] {
     }
   }
   return profile;
+}
+
+export function getGame(_gameId: GameId): Game[] {
+  let game: Game[] = [];
+
+  for (let x = 0; x < games.length; x++) {
+    if (games[x].id == _gameId) {
+      game.push(games[x])
+    }
+  }
+
+  return game;
 }
 
 export function getGamePlayers(_gameId: GameId): Player[] {

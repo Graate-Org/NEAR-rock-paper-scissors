@@ -12,6 +12,7 @@ function createRoom
 - "Change" function (ie. a function that alters contract state)
 - Recieve a boolean value (false for private room, true for public room)
 - Creates a new room and update the rooms data structure with the created room.
+- Returns a success message.
 
 ```ts
 function joinPublicRoom
@@ -45,6 +46,7 @@ function createGame
 - Recieves a `'{"_roomId": RoomId}'` as parameter
 - Allows the account initiating the contract call to create a new game within a room
 - This updates the `games` data structure with the new game.
+- Returns a success message.
 
 
 ```ts
@@ -54,6 +56,7 @@ function play
 - Recieves a `'{"_gameId": GameId}'` as parameter
 - This invokes the `addNewPlayer` method on the `Game` data type.
 - Smart contract panics if maximum players reached.
+- Returns a success message.
 
 
 ```ts
@@ -106,6 +109,13 @@ function getRoom
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a `'{_roomId: RoomId}'` as parameter
 - Returns a room with its details.
+
+```ts
+function getGame
+```
+- "View" function (ie. a function that does not alters contract state)
+- Recieves a `'{_gameId: GameId}'` as parameter
+- Returns a game with its details.
 
 ```ts
 function getProfile
