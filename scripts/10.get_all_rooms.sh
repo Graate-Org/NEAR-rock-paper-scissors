@@ -1,1 +1,1 @@
-near call $CONTRACT getRooms --account_id $MEMBER '{"isJoined": false}'
+near call $CONTRACT getRooms --account_id $MEMBER '{"isJoined": true, "acct": "preshy.testnet"}'

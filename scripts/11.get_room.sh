@@ -1,0 +1,1 @@
+near view $CONTRACT getRoom --account_id $MEMBER '{"_roomId": "RM-1639095179070351884"}'
