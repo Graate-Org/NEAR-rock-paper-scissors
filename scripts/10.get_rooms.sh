@@ -1,0 +1,1 @@
+near call $CONTRACT getRooms --account_id $MEMBER '{"isJoined": true, "acct": "ikeh_akinyemi.testnet"}'

@@ -41,6 +41,14 @@ function approveMember
 - Returns a success message.
 
 ```ts
+function rejectRequest
+```
+- "Change" function (ie. a function that alters contract state)
+- Recieves a `'{"_roomId": RoomId, "acct": AccountId, "_isVisible": boolean}'` as parameter
+- This invokes the `rejectMembershipRequest` methods on the `Room` data type.
+- Returns a rejection message.
+
+```ts
 function createGame
 ```
 - "Change" function (ie. a function that alters contract state)

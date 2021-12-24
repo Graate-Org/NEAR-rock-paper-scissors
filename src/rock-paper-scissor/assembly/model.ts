@@ -87,6 +87,18 @@ export class Room {
       }
     }
   }
+
+  rejectMembershipRequest(_roomId: RoomId, acctId: AccountId): void {
+    const requests = this.requests.get(_roomId) as Request[];
+
+    for (let x = 0; x < requests.length; x++) {
+      if (requests[x].accountId == acctId) {
+        const request = requests[x];
+        request.state = RequestStatus.REJECTED;
+        this.requests.set(_roomId, requests);
+      }
+    }
+  }
 }
 
 @nearBindgen

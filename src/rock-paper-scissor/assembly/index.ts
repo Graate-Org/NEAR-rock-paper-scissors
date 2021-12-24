@@ -49,7 +49,14 @@ export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): string {
 
         for (let i = 0; i < members.length; i++) {
           if (members[i].accountId == Context.sender) {
-            assert(false, "You're already a member of this room");
+            assert(
+              false,
+              "You're already" +
+                members[i].accountId +
+                " " +
+                Context.sender +
+                " a member of this room"
+            );
           }
         }
 
@@ -123,7 +130,46 @@ export function approveMember(
     }
   }
 
-  return "Successfully joined room";
+  return "Successfully approved a new member for this room";
+}
+
+export function rejectRequest(
+  _roomId: RoomId,
+  acct: AccountId,
+  _isVisible: boolean
+): string {
+
+verifyRoom(_roomId);
+  verifyRequest(_roomId, acct);
+
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id == _roomId) {
+      assert(
+        Context.sender == rooms[x].owner,
+        "You don't have the power to add this fellow"
+      );
+    }
+  }
+
+  if (!_isVisible) {
+    for (let x = 0; x < rooms.length; x++) {
+      if (rooms[x].id == _roomId) {
+        const room = rooms.swap_remove(x) as Room;
+        const members = room.members.get(room.id) as Member[];
+
+        for (let i = 0; i < members.length; i++) {
+          if (members[i].accountId == acct) {
+            assert(false, "You're already a member of this room");
+          }
+        }
+
+        room.rejectMembershipRequest(room.id, acct);
+        rooms.push(room);
+      }
+    }
+  }
+
+  return "Rejected this request to join the room";
 }
 
 export function createGame(_roomId: RoomId): string {
@@ -142,7 +188,7 @@ export function createGame(_roomId: RoomId): string {
 
 export function play(_gameId: GameId): string {
   verifyGame(_gameId);
-  
+
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, PFEE);
 
@@ -192,7 +238,10 @@ export function payout(_gameId: GameId): bool {
 
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
-      assert(Context.sender == games[x].createdBy, "Only the owner of this game can call this function");
+      assert(
+        Context.sender == games[x].createdBy,
+        "Only the owner of this game can call this function"
+      );
 
       const game = games.swap_remove(x) as Game;
       if (game.status == Status.COMPLETED) {
@@ -215,15 +264,27 @@ export function getRooms(isJoined: boolean, acct: AccountId): Room[] {
   for (let x = 0; x < rooms.length; x++) {
     const members = rooms[x].members.get(rooms[x].id) as Member[];
 
-    for (let i = 0; i < members.length; i++) {
-      if(isJoined) {
+    if (isJoined) {
+      for (let i = 0; i < members.length; i++) {
         if (members[i].accountId == acct) {
           returnedRooms.push(rooms[x]);
+          break;
         }
-      } else if (!isJoined) {
-        if (members[i].accountId != acct) {
-          returnedRooms.push(rooms[x]);
+      }
+    }
+
+    if (!isJoined) {
+      const arr = [];
+      for (let i = 0; i < members.length; i++) {
+        if (members[i].accountId == acct) {
+          arr.push(true);
+        } else {
+          arr.push(false);
         }
+      }
+
+      if (arr.includes(true) == false) {
+        returnedRooms.push(rooms[x]);
       }
     }
   }
@@ -279,7 +340,7 @@ export function getRoom(_roomId: RoomId): Room[] {
 
   for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
-      room.push(rooms[x])
+      room.push(rooms[x]);
     }
   }
 
@@ -302,7 +363,7 @@ export function getGame(_gameId: GameId): Game[] {
 
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
-      game.push(games[x])
+      game.push(games[x]);
     }
   }
 
@@ -369,7 +430,7 @@ function verifyMembership(_roomId: RoomId, acct: AccountId): void {
 
 function verifyRequest(_roomId: RoomId, acct: AccountId): void {
   for (let x = 0; x < rooms.length; x++) {
-    if(rooms[x].id == _roomId) {
+    if (rooms[x].id == _roomId) {
       const requests = rooms[x].requests.get(_roomId) as Request[];
       for (let y = 0; y < requests.length; y++) {
         if (requests[y].accountId == acct) {
@@ -379,11 +440,11 @@ function verifyRequest(_roomId: RoomId, acct: AccountId): void {
     }
   }
 
-  assert(false, "No such request from this user")
+  assert(false, "No such request from this user");
 }
 
 function verifyRoom(_roomId: RoomId): void {
-  for(let x = 0; x < rooms.length; x++) {
+  for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
       return;
     }
@@ -393,7 +454,7 @@ function verifyRoom(_roomId: RoomId): void {
 }
 
 function verifyGame(_gameId: GameId): void {
-  for(let x = 0; x < games.length; x++) {
+  for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
       return;
     }
