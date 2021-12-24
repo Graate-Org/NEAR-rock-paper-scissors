@@ -94,10 +94,10 @@ export function requestToJoinPrivateRoom(_roomId: RoomId): string {
   return "Request sent successfully!";
 }
 
-export function approveMember(
+export function responseToRequest(
   _roomId: RoomId,
   acct: AccountId,
-  _isVisible: boolean
+  acceptance: boolean
 ): string {
   verifyRoom(_roomId);
   verifyRequest(_roomId, acct);
@@ -111,7 +111,6 @@ export function approveMember(
     }
   }
 
-  if (!_isVisible) {
     for (let x = 0; x < rooms.length; x++) {
       if (rooms[x].id == _roomId) {
         const room = rooms.swap_remove(x) as Room;
@@ -123,53 +122,19 @@ export function approveMember(
           }
         }
 
-        room.addNewMember(room.id, acct);
-        room.updateRequests(room.id, acct);
+        if (acceptance) {
+          room.addNewMember(room.id, acct);
+          room.acceptRequest(room.id, acct);
+        } else {
+          room.rejectRequest(room.id, acct);
+        } 
+
         rooms.push(room);
       }
     }
-  }
+  
 
-  return "Successfully approved a new member for this room";
-}
-
-export function rejectRequest(
-  _roomId: RoomId,
-  acct: AccountId,
-  _isVisible: boolean
-): string {
-
-verifyRoom(_roomId);
-  verifyRequest(_roomId, acct);
-
-  for (let x = 0; x < rooms.length; x++) {
-    if (rooms[x].id == _roomId) {
-      assert(
-        Context.sender == rooms[x].owner,
-        "You don't have the power to add this fellow"
-      );
-    }
-  }
-
-  if (!_isVisible) {
-    for (let x = 0; x < rooms.length; x++) {
-      if (rooms[x].id == _roomId) {
-        const room = rooms.swap_remove(x) as Room;
-        const members = room.members.get(room.id) as Member[];
-
-        for (let i = 0; i < members.length; i++) {
-          if (members[i].accountId == acct) {
-            assert(false, "You're already a member of this room");
-          }
-        }
-
-        room.rejectMembershipRequest(room.id, acct);
-        rooms.push(room);
-      }
-    }
-  }
-
-  return "Rejected this request to join the room";
+  return "Successfully decided on the new member's request";
 }
 
 export function createGame(_roomId: RoomId): string {

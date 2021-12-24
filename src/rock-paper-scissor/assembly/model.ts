@@ -76,7 +76,7 @@ export class Room {
     this.requests.set(_roomId, requests);
   }
 
-  updateRequests(_roomId: RoomId, acctId: AccountId): void {
+  acceptRequest(_roomId: RoomId, acctId: AccountId): void {
     const requests = this.requests.get(_roomId) as Request[];
 
     for (let x = 0; x < requests.length; x++) {
@@ -88,7 +88,7 @@ export class Room {
     }
   }
 
-  rejectMembershipRequest(_roomId: RoomId, acctId: AccountId): void {
+  rejectRequest(_roomId: RoomId, acctId: AccountId): void {
     const requests = this.requests.get(_roomId) as Request[];
 
     for (let x = 0; x < requests.length; x++) {

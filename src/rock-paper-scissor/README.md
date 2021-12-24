@@ -33,20 +33,12 @@ function requestToJoinPrivateRoom
 - Returns a success message.
 
 ```ts
-function approveMember
+function responseToRequest
 ```
 - "Change" function (ie. a function that alters contract state)
-- Recieves a `'{"_roomId": RoomId, "acct": AccountId, "_isVisible": boolean}'` as parameter
-- This invokes the `addNewMember` and the `updateRequests` methods on the `Room` data type.
+- Recieves a `'{"_roomId": RoomId, "acct": AccountId, "acceptance": boolean}'` as parameter
+- This invokes the `addNewMember` and the `acceptRequests` methods on the `Room` data type if `acceptance` is `true` while it invoking the `rejectRequest` method if `acceptance` is `false`.
 - Returns a success message.
-
-```ts
-function rejectRequest
-```
-- "Change" function (ie. a function that alters contract state)
-- Recieves a `'{"_roomId": RoomId, "acct": AccountId, "_isVisible": boolean}'` as parameter
-- This invokes the `rejectMembershipRequest` methods on the `Room` data type.
-- Returns a rejection message.
 
 ```ts
 function createGame
