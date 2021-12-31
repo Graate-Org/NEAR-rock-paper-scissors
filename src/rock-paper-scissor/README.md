@@ -125,7 +125,7 @@ function getProfile
 ```
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a `'{acct: AccountId}'` as parameter
-- Returns a all the games that a player (AccountId) has participated in.
+- Returns a all the rooms that an accountId is a member of.
 
 ```ts
 function getGamePlayers

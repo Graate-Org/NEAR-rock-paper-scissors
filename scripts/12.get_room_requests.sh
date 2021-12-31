@@ -1,0 +1,1 @@
+near call $CONTRACT getRoomRequests --account_id $MEMBER '{"_roomId": }'

@@ -1,4 +1,4 @@
-import { u128, Context, PersistentVector } from "near-sdk-as";
+import { u128, Context, logging } from "near-sdk-as";
 import {
   AccountId,
   GameId,
@@ -80,9 +80,10 @@ export function requestToJoinPrivateRoom(_roomId: RoomId): string {
       const requests = room.requests.get(_roomId) as Request[];
 
       for (let i = 0; i < requests.length; i++) {
+        logging.log(requests[i].accountId);
         assert(
           requests[i].accountId != Context.sender,
-          "You already sent a request to this room. Wait for approval"
+          "You already sent a request to this room. Wait for approval " + requests[i].accountId + " " + Context.sender
         );
       }
 
@@ -165,7 +166,7 @@ export function play(_gameId: GameId): string {
       const game = games.swap_remove(x) as Game;
       const players = game.players.get(game.id) as Player[];
       assert(
-        players.length + 1 <= game.numOfPlayers,
+        players.length <= game.numOfPlayers,
         "Maximum players reached. Join another game"
       );
       game.addNewPlayer(game.id, id, PFEE);
@@ -174,7 +175,7 @@ export function play(_gameId: GameId): string {
     }
   }
 
-  return "Your outcome has been registered";
+  return "Your hand-gesture has been registered";
 }
 
 export function stake(_gameId: GameId, stakeOn: AccountId): string {
@@ -203,13 +204,9 @@ export function payout(_gameId: GameId): bool {
 
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
-      assert(
-        Context.sender == games[x].createdBy,
-        "Only the owner of this game can call this function"
-      );
-
       const game = games.swap_remove(x) as Game;
-      if (game.status == Status.COMPLETED) {
+      const players = game.players.get(_gameId) as Player[];
+      if (players.length == game.numOfPlayers) {
         game.rewardWinner(_gameId);
         games.push(game);
         isPaid = true;
@@ -312,14 +309,20 @@ export function getRoom(_roomId: RoomId): Room[] {
   return room;
 }
 
-export function getProfile(acct: AccountId): Game[] {
-  const profile: Game[] = [];
-  for (let x = 0; x < games.length; x++) {
-    let players = games[x].players.get(games[x].id) as Player[];
-    if (players[0].name == acct || players[1].name == acct) {
-      profile.push(games[x]);
+export function getProfile(acct: AccountId): Room[] {
+  const profile = [] as Room[];
+
+  for (let x = 0; x < rooms.length; x++) {
+    let members = rooms[x].members.get(rooms[x].id) as Member[];
+    
+    for (let y = 0; y < members.length; y++) {
+      if (members[y].accountId == acct) {
+        profile.push(rooms[x]);
+        break;
+      }
     }
   }
+
   return profile;
 }
 

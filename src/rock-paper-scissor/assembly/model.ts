@@ -5,6 +5,7 @@ import {
   PersistentMap,
   u128,
   math,
+  logging,
 } from "near-sdk-core";
 import {
   AccountId,
@@ -19,11 +20,6 @@ export enum Choice {
   ROCK,
   PAPER,
   SCISSOR,
-}
-
-export enum Participant {
-  PLAYER,
-  STAKER,
 }
 
 export enum Status {
@@ -90,14 +86,18 @@ export class Room {
 
   rejectRequest(_roomId: RoomId, acctId: AccountId): void {
     const requests = this.requests.get(_roomId) as Request[];
+    const newRequest: Request[] = [];
 
     for (let x = 0; x < requests.length; x++) {
-      if (requests[x].accountId == acctId) {
-        const request = requests[x];
-        request.state = RequestStatus.REJECTED;
-        this.requests.set(_roomId, requests);
+      if (requests[x].accountId != acctId) {
+        // const request = requests[x];
+        // request.state = RequestStatus.REJECTED;
+        // this.requests.set(_roomId, requests);
+        
+        newRequest.push(requests[x]);
       }
     }
+    this.requests.set(_roomId, newRequest);
   }
 }
 
@@ -170,7 +170,6 @@ export class Game {
     if (newPlayers.length == 1) {
       this.status = Status.ACTIVE;
     } else if (newPlayers.length == this.numOfPlayers) {
-      this.status = Status.COMPLETED;
       this.winner(_gameId);
     }
   }
@@ -245,6 +244,7 @@ export class Game {
       if (players[x].name == winners[0]) {
         this.transfer(players[x].name, players[x].txFee);
         this.rewardStakers(_gameId, players[x].name);
+        this.status = Status.COMPLETED;
 
         break;
       }
@@ -274,6 +274,7 @@ export class Player {
   id: PlayerId;
   name: AccountId;
   choice: Choice;
+  timePlayed: u64;
   txFee: u128;
 
   constructor(_id: PlayerId, _name: AccountId, _choice: Choice, _txFee: u128) {
@@ -281,6 +282,7 @@ export class Player {
     this.name = _name;
     this.choice = _choice;
     this.txFee = _txFee;
+    this.timePlayed = Context.blockTimestamp;
   }
 }
 
@@ -326,7 +328,6 @@ export class Request {
 export enum RequestStatus {
   CREATED,
   ACCEPTED,
-  REJECTED,
 }
 
 export const rooms = new PersistentVector<Room>("r");

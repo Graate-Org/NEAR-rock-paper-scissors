@@ -1,7 +1,7 @@
 import { VMContext } from "near-mock-vm";
 import { PersistentVector, u128 } from "near-sdk-core";
 import {
-  approveMember,
+  responseToRequest,
   createGame,
   createRoom,
   joinPublicRoom,
@@ -89,7 +89,7 @@ describe("Joining a created room", () => {
     expect<Request[]>(requests).toHaveLength(1, "A new request to join the private room");
 
     VMContext.setSigner_account_id(OWNER);
-    approveMember(rooms[0].id, requests[0].accountId, false);
+    responseToRequest(rooms[0].id, requests[0].accountId, false);
     const members = rooms[0].members.get(rooms[0].id) as Member[];
 
     expect<Member[]>(members).toHaveLength(
