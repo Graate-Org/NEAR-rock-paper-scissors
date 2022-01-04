@@ -86,7 +86,7 @@ describe("Joining a created room", () => {
     VMContext.setAttached_deposit(JoinFEE);
 
     requestToJoinPrivateRoom(rooms[0].id);
-    const requests = rooms[0].requests.get(rooms[0].id) as Request[];
+    let requests = rooms[0].requests.get(rooms[0].id) as Request[];
     expect<Request[]>(requests).toHaveLength(1, "A new request to join the private room");
 
     VMContext.setSigner_account_id(OWNER);
@@ -97,6 +97,8 @@ describe("Joining a created room", () => {
       2,
       "A new member has been added to the private room"
     );
+
+    requests = rooms[0].requests.get(rooms[0].id) as Request[];
     expect<RequestStatus>(requests[0].state).toBe(
       RequestStatus.ACCEPTED,
       "This request has been approved"
@@ -230,6 +232,6 @@ describe("Winning a game as a player", () => {
   });
 
   it("Payout of pool", () => {
-    expect<void>(payout(games[0].id)).toBeTruthy("Successful transfer transaction to winner and stakers.");
+    expect<bool>(payout(games[0].id)).toBeTruthy("Successful transfer transaction to winner and stakers.");
   })
 })

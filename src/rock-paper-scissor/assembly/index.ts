@@ -170,20 +170,25 @@ export function stake(_gameId: GameId, stakeOn: AccountId): void {
   }
 }
 
-export function payout(_gameId: GameId): void {
+export function payout(_gameId: GameId): bool {
+  let isPaid: bool = false;
+
   for (let x = 0; x < games.length; x++) {
     if (games[x].id == _gameId) {
-      assert(Context.sender == games[x].createdBy, "Only the owner of this game can call this function");
-
       const game = games.swap_remove(x) as Game;
-      if (game.status == Status.COMPLETED) {
+      const players = game.players.get(_gameId) as Player[];
+      if (players.length == game.numOfPlayers) {
         game.rewardWinner(_gameId);
         games.push(game);
+        isPaid = true;
+        return isPaid;
       } else {
         assert(false, "This game is not yet completed!");
       }
     }
   }
+
+  return isPaid;
 }
 
 export function getRooms(isJoined: boolean): Room[] {
