@@ -1,5 +1,5 @@
 import { VMContext } from "near-mock-vm";
-import { PersistentVector, u128 } from "near-sdk-core";
+import { PersistentVector, u128, logging } from "near-sdk-core";
 import {
   responseToRequest,
   createGame,
@@ -57,7 +57,9 @@ describe("Creating a room", () => {
     function zeroDeposit(): void {
       createRoom(false);
     }
-    expect<() => void>(zeroDeposit).toThrow("Expected a deposit before creating a room");
+    expect<() => void>(zeroDeposit).toThrow(
+      "Expected a deposit before creating a room"
+    );
   });
 });
 
@@ -79,17 +81,20 @@ describe("Joining a created room", () => {
     );
   });
 
-  it("Join a private room", () => {
+  it("Accept request to join private room", () => {
     createRoom(false);
     VMContext.setSigner_account_id(MEMBER);
     VMContext.setAttached_deposit(JoinFEE);
 
     requestToJoinPrivateRoom(rooms[0].id);
     let requests = rooms[0].requests.get(rooms[0].id) as Request[];
-    expect<Request[]>(requests).toHaveLength(1, "A new request to join the private room");
+    expect<Request[]>(requests).toHaveLength(
+      1,
+      "A new request to join the private room"
+    );
 
     VMContext.setSigner_account_id(OWNER);
-    responseToRequest(rooms[0].id, requests[0].accountId, false);
+    responseToRequest(rooms[0].id, requests[0].accountId, true);
     const members = rooms[0].members.get(rooms[0].id) as Member[];
 
     expect<Member[]>(members).toHaveLength(
@@ -100,6 +105,26 @@ describe("Joining a created room", () => {
     expect<RequestStatus>(requests[0].state).toBe(
       RequestStatus.ACCEPTED,
       "This request has been approved"
+    );
+
+    VMContext.setSigner_account_id(MEMBER);
+  });
+
+  it("Reject request to join private room", () => {
+    createRoom(false);
+    VMContext.setSigner_account_id(MEMBER);
+    VMContext.setAttached_deposit(JoinFEE);
+
+    requestToJoinPrivateRoom(rooms[0].id);
+    let requests = rooms[0].requests.get(rooms[0].id) as Request[];
+
+    VMContext.setSigner_account_id(OWNER);
+    responseToRequest(rooms[0].id, requests[0].accountId, false);
+
+    requests = rooms[0].requests.get(rooms[0].id) as Request[];
+    expect<i32>(requests.length).toBe(
+      0,
+      "Rejected a request to add a new member to the private room"
     );
   });
 });
@@ -129,7 +154,9 @@ describe("Creating a game within a room", () => {
       createGame(rooms[0].id);
     }
 
-    expect<() => void>(zeroDeposit).toThrow("Can't create game with zero deposit");
+    expect<() => void>(zeroDeposit).toThrow(
+      "Can't create game with zero deposit"
+    );
   });
 });
 
@@ -148,24 +175,31 @@ describe("Playing a created game within a room", () => {
   it("member gets added as a player and plays", () => {
     VMContext.setAttached_deposit(PFEE);
     play(games[0].id);
-    expect<Status>(games[0].status).toBe(Status.ACTIVE, "A player has been added to the game, as well as the player has played and the game is active");
+    expect<Status>(games[0].status).toBe(
+      Status.ACTIVE,
+      "A player has been added to the game, as well as the player has played and the game is active"
+    );
 
     VMContext.setSigner_account_id(PLAYER);
     joinPublicRoom(rooms[0].id, true);
     VMContext.setAttached_deposit(PFEE);
     play(games[0].id);
-    expect<Status>(games[0].status).toBe(Status.COMPLETED, "This game is completed as the last player for the game has played");
-  })
-
+    const players = games[0].players.get(games[0].id) as Player[];
+    expect<u32>(players.length).toBe(
+      2,
+      "The maximum number of players has participated in this game"
+    );
+  });
 
   it("throws error with zero deposit", () => {
     VMContext.setAttached_deposit(u128.Zero);
     function zeroDeposit(): void {
-      play(games[0].id)
+      play(games[0].id);
     }
-    expect<() => void>(zeroDeposit).toThrow("Can't play a game with zero deposit")
-  })
-
+    expect<() => void>(zeroDeposit).toThrow(
+      "Can't play a game with zero deposit"
+    );
+  });
 });
 
 describe("Staking on players within a game", () => {
@@ -179,7 +213,7 @@ describe("Staking on players within a game", () => {
     VMContext.setAttached_deposit(GFEE);
     createGame(rooms[0].id);
     VMContext.setAttached_deposit(PFEE);
-    play(games[0].id)
+    play(games[0].id);
   });
 
   it("stake on a player", () => {
@@ -187,10 +221,13 @@ describe("Staking on players within a game", () => {
     VMContext.setSigner_account_id(STAKER);
     const players = games[0].players.get(games[0].id) as Player[];
     stake(games[0].id, MEMBER);
-    const stakers = games[0].stakers.get(games[0].id) as Staker[]
+    const stakers = games[0].stakers.get(games[0].id) as Staker[];
 
-    expect<Staker[]>(stakers).toHaveLength(1, "A staker has staked on a player involved in this game")
-  })
+    expect<Staker[]>(stakers).toHaveLength(
+      1,
+      "A staker has staked on a player involved in this game"
+    );
+  });
 
   it("throws error with zero deposit", () => {
     VMContext.setAttached_deposit(u128.Zero);
@@ -200,9 +237,11 @@ describe("Staking on players within a game", () => {
     function zeroDeposit(): void {
       stake(games[0].id, MEMBER);
     }
-    expect<() => void>(zeroDeposit).toThrow("Can't stake within a game with zero deposit")
-  })
-})
+    expect<() => void>(zeroDeposit).toThrow(
+      "Can't stake within a game with zero deposit"
+    );
+  });
+});
 
 describe("Winning a game as a player", () => {
   beforeEach(() => {
@@ -226,11 +265,20 @@ describe("Winning a game as a player", () => {
   it("Winner of the game", () => {
     const winners = games[0].winners.get(games[0].id) as AccountId[];
 
-    expect<string[]>(winners).toHaveLength(1, "We have a winner for the completed game")
+    expect<string[]>(winners).toHaveLength(
+      1,
+      "We have a winner for the completed game"
+    );
   });
 
   it("Payout of pool", () => {
     VMContext.setSigner_account_id(MEMBER);
-    expect<bool>(payout(games[0].id)).toBeTruthy("Successful transfer transaction to winner and stakers.");
-  })
-})
+    expect<bool>(payout(games[0].id)).toBeTruthy(
+      "Successful transfer transaction to winner and stakers."
+    );
+    expect<Status>(games[0].status).toBe(
+      Status.COMPLETED,
+      "This game is completed as the last player for the game has played"
+    );
+  });
+});

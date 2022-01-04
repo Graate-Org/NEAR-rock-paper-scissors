@@ -1,1 +1,1 @@
-near call $CONTRACT approveMember --account_id $OWNER '{"_roomId": "RM-1637596023538693122", "acct": "akinyemi.testnet", "_isVisible": false}'
+near call $CONTRACT responseToRequest --account_id $MEMBER '{"_roomId": "RM-1641295855911994033", "acct": "zioncodev.testnet", "acceptance": true}' --gas=40000000000000

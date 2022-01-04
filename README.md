@@ -7,7 +7,7 @@ The flaws fixed within this smart contract are:
 - Anyone can create a game or play a game even if not a member of the room.
   - solution: restrict a non-member from creating or playing a game within a room.
 - Without making a request, a player can be added to a private room.
-  - check if a join-room request exists before approving a request/member
+  - solution: check if a join-room request exists before approving a request/member
 
 Check out these additional video content for more informtion on this rock-paper-scissor smart contract methods:
 

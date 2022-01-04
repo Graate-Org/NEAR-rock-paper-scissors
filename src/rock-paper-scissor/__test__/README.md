@@ -18,8 +18,9 @@ yarn test:unit
 
 [Describe]: Joining a created room
 
- [Success]: ✔ Join a public room
- [Success]: ✔ Join a private room
+ [Success]: ✔ create a public room
+ [Success]: ✔ Accept request to join private room
+ [Success]: ✔ Reject request to join private room
 
 [Describe]: Creating a game within a room
 
@@ -45,14 +46,14 @@ yarn test:unit
   [Groups]: 7 pass, 7 total
   [Result]: ✔ PASS
 [Snapshot]: 0 total, 0 added, 0 removed, 0 different
- [Summary]: 13 pass,  0 fail, 13 total
-    [Time]: 167.882ms
+ [Summary]: 14 pass,  0 fail, 14 total
+    [Time]: 169.011ms
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   [Result]: ✔ PASS
    [Files]: 1 total
   [Groups]: 7 count, 7 pass
-   [Tests]: 13 pass, 0 fail, 13 total
-    [Time]: 8698.37ms
-✨  Done in 17.96s.
+   [Tests]: 14 pass, 0 fail, 14 total
+    [Time]: 9047.68ms
+✨  Done in 9.90s.

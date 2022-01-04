@@ -10,6 +10,7 @@ import {
 import {
   AccountId,
   GameId,
+  PFEE,
   PlayerId,
   RoomId,
   StakerId,
@@ -90,10 +91,6 @@ export class Room {
 
     for (let x = 0; x < requests.length; x++) {
       if (requests[x].accountId != acctId) {
-        // const request = requests[x];
-        // request.state = RequestStatus.REJECTED;
-        // this.requests.set(_roomId, requests);
-        
         newRequest.push(requests[x]);
       }
     }
@@ -240,30 +237,37 @@ export class Game {
   rewardWinner(_gameId: GameId): void {
     const winners = this.winners.get(this.id) as AccountId[];
     const players = this.players.get(this.id) as Player[];
+    const stakers = this.stakers.get(_gameId) as Staker[];
+
+    const reward: u128 = u128.add(u128.mul(PFEE, u128.from(0.5)), PFEE);
+
     for (let x = 0; x < players.length; x++) {
       if (players[x].name == winners[0]) {
-        this.transfer(players[x].name, players[x].txFee);
-        this.rewardStakers(_gameId, players[x].name);
-        this.status = Status.COMPLETED;
+        this.transfer(players[x].name, reward);
+
+        if (stakers.length > -1 || stakers.length > 0) {
+          this.rewardStakers(_gameId, players[x].name);
+        }
 
         break;
       }
     }
+    
+    this.status = Status.COMPLETED;
   }
 
-  rewardStakers(_gameId: GameId, _betOn: AccountId): void {
+  rewardStakers(_gameId: GameId, winner: AccountId): void {
     const stakers = this.stakers.get(_gameId) as Staker[];
+    const reward: u128 = u128.div(u128.mul(this.pool, u128.from(0.7)), u128.from(stakers.length))
 
     for (let i = 0; i < stakers.length; i++) {
-      if (stakers[i].betOn == _betOn) {
-        this.transfer(stakers[i].name, stakers[i].stake);
+      if (stakers[i].betOn == winner) {
+        this.transfer(stakers[i].name, reward);
       }
     }
   }
 
-  transfer(to: AccountId, invested: u128): void {
-    const reward = u128.add(invested, u128.mul(invested, u128.from(0.5)));
-
+  transfer(to: AccountId, reward: u128): void {
     const transfer_win = ContractPromiseBatch.create(to);
     transfer_win.transfer(reward);
   }
