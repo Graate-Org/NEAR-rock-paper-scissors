@@ -12,7 +12,14 @@
     "clean": "rm -rf ./build && rm -rf ./neardev && rm -rf ./target",
     "deploy": "./scripts/1.deploy.sh"
   },
-  "keywords": ["NEAR", "NEAR protocol", "NEAR blockchain", "smart contract", "game development", "AssemblyScript"],
+  "keywords": [
+    "NEAR",
+    "NEAR protocol",
+    "NEAR blockchain",
+    "smart contract",
+    "game development",
+    "AssemblyScript"
+  ],
   "author": "support@graate.org",
   "license": "ISC",
   "dependencies": {

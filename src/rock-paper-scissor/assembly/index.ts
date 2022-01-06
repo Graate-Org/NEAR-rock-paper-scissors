@@ -1,38 +1,13 @@
 import { u128, Context, logging } from "near-sdk-as";
-import {
-  AccountId,
-  GameId,
-  GFEE,
-  JoinFEE,
-  PFEE,
-  RFEE,
-  RoomId,
-  SFEE,
-} from "../utils";
-import {
-  Game,
-  games,
-  Member,
-  Player,
-  Request,
-  RequestStatus,
-  Room,
-  rooms,
-  Staker,
-  Status,
-  Visibility,
-} from "./model";
+import { AccountId, GameId, GFEE, JoinFEE, PFEE, RFEE, RoomId, SFEE } from "../utils";
+import { Game, games, Member, Player, Request, RequestStatus, Room, rooms, Staker, Status, Visibility } from "./model";
 
 export function createRoom(_isVisible: boolean): string {
   const txDeposit = Context.attachedDeposit;
   verifyTxFee(txDeposit, RFEE);
 
   const id = generateId("RM-");
-  const room = new Room(
-    id,
-    Context.sender,
-    _isVisible ? Visibility.PUBLIC : Visibility.PRIVATE
-  );
+  const room = new Room(id, Context.sender, _isVisible ? Visibility.PUBLIC : Visibility.PRIVATE);
 
   rooms.push(room);
   return "Created a room with id: " + id;
@@ -48,16 +23,7 @@ export function joinPublicRoom(_roomId: RoomId, _isVisible: boolean): string {
         const members = room.members.get(room.id) as Member[];
 
         for (let i = 0; i < members.length; i++) {
-          if (members[i].accountId == Context.sender) {
-            assert(
-              false,
-              "You're already" +
-                members[i].accountId +
-                " " +
-                Context.sender +
-                " a member of this room"
-            );
-          }
+          assert(members[i].accountId != Context.sender, "You're already " + members[i].accountId + " " + Context.sender + " a member of this room");
         }
 
         room.addNewMember(room.id, Context.sender);
@@ -95,45 +61,37 @@ export function requestToJoinPrivateRoom(_roomId: RoomId): string {
   return "Request sent successfully!";
 }
 
-export function responseToRequest(
-  _roomId: RoomId,
-  acct: AccountId,
-  acceptance: boolean
-): string {
+export function responseToRequest(_roomId: RoomId, acct: AccountId, acceptance: boolean): string {
   verifyRoom(_roomId);
   verifyRequest(_roomId, acct);
 
   for (let x = 0; x < rooms.length; x++) {
     if (rooms[x].id == _roomId) {
-      assert(
-        Context.sender == rooms[x].owner,
-        "You don't have the power to add this fellow"
-      );
+      assert(Context.sender == rooms[x].owner, "You don't have the power to add this fellow");
     }
   }
 
-    for (let x = 0; x < rooms.length; x++) {
-      if (rooms[x].id == _roomId) {
-        const room = rooms.swap_remove(x) as Room;
-        const members = room.members.get(room.id) as Member[];
+  for (let x = 0; x < rooms.length; x++) {
+    if (rooms[x].id == _roomId) {
+      const room = rooms.swap_remove(x) as Room;
+      const members = room.members.get(room.id) as Member[];
 
-        for (let i = 0; i < members.length; i++) {
-          if (members[i].accountId == acct) {
-            assert(false, "You're already a member of this room");
-          }
+      for (let i = 0; i < members.length; i++) {
+        if (members[i].accountId == acct) {
+          assert(false, "You're already a member of this room");
         }
-
-        if (acceptance) {
-          room.addNewMember(room.id, acct);
-          room.acceptRequest(room.id, acct);
-        } else {
-          room.rejectRequest(room.id, acct);
-        } 
-
-        rooms.push(room);
       }
+
+      if (acceptance) {
+        room.addNewMember(room.id, acct);
+        room.acceptRequest(room.id, acct);
+      } else {
+        room.rejectRequest(room.id, acct);
+      }
+
+      rooms.push(room);
     }
-  
+  }
 
   return "Successfully decided on the new member's request";
 }
@@ -165,10 +123,7 @@ export function play(_gameId: GameId): string {
       verifyMembership(games[x].roomId, Context.sender);
       const game = games.swap_remove(x) as Game;
       const players = game.players.get(game.id) as Player[];
-      assert(
-        players.length <= game.numOfPlayers,
-        "Maximum players reached. Join another game"
-      );
+      assert(players.length <= game.numOfPlayers, "Maximum players reached. Join another game");
       game.addNewPlayer(game.id, id, PFEE);
 
       games.push(game);
@@ -314,7 +269,7 @@ export function getProfile(acct: AccountId): Room[] {
 
   for (let x = 0; x < rooms.length; x++) {
     let members = rooms[x].members.get(rooms[x].id) as Member[];
-    
+
     for (let y = 0; y < members.length; y++) {
       if (members[y].accountId == acct) {
         profile.push(rooms[x]);
@@ -432,12 +387,7 @@ function verifyGame(_gameId: GameId): void {
 }
 
 function verifyTxFee(deposit: u128, Fee: u128): void {
-  assert(
-    deposit >= Fee,
-    "You need to have at least " +
-      Fee.toString() +
-      " yocto of NEAR tokens to continue"
-  );
+  assert(deposit >= Fee, "You need to have at least " + Fee.toString() + " yocto of NEAR tokens to continue");
 }
 
 function generateId(prefix: string): string {
