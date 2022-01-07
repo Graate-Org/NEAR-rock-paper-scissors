@@ -10,7 +10,8 @@ The flaws within the smart contract are:
   - check if a join-room request exists before approving a request/member
 
 Check out these additional video content for more informtion on this rock-paper-scissor smart contract methods:
-
+https://loom.com/share/folder/39accbd082e44ddf99805235b2d6f4b1
+https://www.loom.com/share/folder/7d02b7d00fdd40d6a77d55d5d60c8363
 
 This is a smart contract written in the simple format. This smart contract introduces game development on the NEAR blockchain using assembly script:
 - How to use Data types and the data structures within AssemblyScript based smart contract. How state management across a DApp works, and as well, how to implement restrictions on your smart contracts 
