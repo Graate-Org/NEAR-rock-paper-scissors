@@ -1,1 +1,1 @@
-near call $CONTRACT createGame --account_id $MEMBER '{"_roomId": "RM-1640734756234818107"}' --amount 0.5
+near call $CONTRACT createGame --account_id $OWNER '{"_roomId": "RM-1641686216081120145"}' --amount 0.5
