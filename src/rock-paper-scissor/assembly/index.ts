@@ -222,7 +222,7 @@ export function getRoomMembers(_roomId: RoomId): Member[] {
   return returnedMembers;
 }
 
-export function getRoomRequests(_roomId: GameId): Request[] {
+export function getRoomRequests(_roomId: RoomId): Request[] {
   const returnedRequests: Request[] = [];
 
   for (let x = 0; x < rooms.length; x++) {
