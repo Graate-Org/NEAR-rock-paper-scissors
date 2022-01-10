@@ -1,0 +1,1 @@
+near view $CONTRACT getWinner --account_id $MEMBER '{"_gameId": GameId}'

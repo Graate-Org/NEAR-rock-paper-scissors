@@ -1,0 +1,1 @@
+near view $CONTRACT getRoomGames --account_id $MEMBER '{"_roomId": RoomId, "gameStatus": Status}'

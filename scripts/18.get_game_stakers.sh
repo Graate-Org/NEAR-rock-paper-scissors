@@ -1,0 +1,1 @@
+near view $CONTRACT getGameStakers --account_id $MEMBER '{"_gameId": GameId}'

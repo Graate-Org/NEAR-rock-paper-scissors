@@ -1,0 +1,1 @@
+near view $CONTRACT getGamePlayers --account_id $MEMBER '{"_gameId": GameId}'

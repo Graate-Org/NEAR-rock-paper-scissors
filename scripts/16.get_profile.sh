@@ -1,0 +1,1 @@
+near view $CONTRACT getProfile --account_id $MEMBER '{acct: AccountId}'
